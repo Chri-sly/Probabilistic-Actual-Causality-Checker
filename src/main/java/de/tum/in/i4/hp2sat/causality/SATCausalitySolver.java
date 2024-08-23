@@ -37,8 +37,8 @@ class SATCausalitySolver extends CausalitySolver {
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
     @Override
-    CausalitySolverResult solve(CausalModel causalModel, Set<Literal> context, Formula phi, Set<Literal> cause,
-                                SolvingStrategy solvingStrategy) throws InvalidCausalModelException {
+    public CausalitySolverResult solve(CausalModel causalModel, Set<Literal> context, Formula phi, Set<Literal> cause,
+                                       SolvingStrategy solvingStrategy) throws InvalidCausalModelException {
         return solve(causalModel, context, phi, cause, solvingStrategy, MINISAT);
     }
 

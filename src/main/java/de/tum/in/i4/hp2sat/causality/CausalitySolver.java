@@ -11,7 +11,7 @@ import org.logicng.util.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 
-abstract class CausalitySolver {
+public abstract class CausalitySolver {
     /**
      * Checks AC1, AC2 and AC3 given a causal model, a cause, a context and phi and a solving strategy.
      *
@@ -23,7 +23,7 @@ abstract class CausalitySolver {
      * @return for each AC, true if fulfilled, false else
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    abstract CausalitySolverResult solve(CausalModel causalModel, Set<Literal> context, Formula phi,
+    public abstract CausalitySolverResult solve(CausalModel causalModel, Set<Literal> context, Formula phi,
                                          Set<Literal> cause, SolvingStrategy solvingStrategy)
             throws InvalidCausalModelException;
 
@@ -36,7 +36,7 @@ abstract class CausalitySolver {
      * @return a tuple where the first item indicates whether phi occurred and the second item whether the cause
      * occurred
      */
-    Pair<Boolean, Boolean> fulfillsAC1(Set<Literal> evaluation, Formula phi, Set<Literal> cause) {
+    protected Pair<Boolean, Boolean> fulfillsAC1(Set<Literal> evaluation, Formula phi, Set<Literal> cause) {
         boolean phiEvaluation = phi.evaluate(new Assignment(evaluation));
         return new Pair<>(phiEvaluation, evaluation.containsAll(cause));
     }
@@ -91,7 +91,7 @@ abstract class CausalitySolver {
      * @return evaluation for all variables within the causal model (endo and exo); positive literal means true,
      * negative means false
      */
-    static Set<Literal> evaluateEquations(CausalModel causalModel, Set<Literal> context) {
+    protected static Set<Literal> evaluateEquations(CausalModel causalModel, Set<Literal> context) {
         // initially, we can only assign the exogenous variables as defined by the context
         Assignment assignment = new Assignment(context);
         for (Equation equation : causalModel.getEquationsSorted()) {
@@ -124,7 +124,7 @@ abstract class CausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    CausalModel createModifiedCausalModelForCause(CausalModel causalModel, Set<Literal> cause, FormulaFactory f)
+    protected CausalModel createModifiedCausalModelForCause(CausalModel causalModel, Set<Literal> cause, FormulaFactory f)
             throws InvalidCausalModelException {
         return createModifiedCausalModel(causalModel, cause.stream().map(Literal::negate)
                 .collect(Collectors.toSet()), f);
@@ -140,7 +140,7 @@ abstract class CausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    CausalModel createModifiedCausalModelForW(CausalModel causalModel, Set<Literal> w, FormulaFactory f)
+    protected CausalModel createModifiedCausalModelForW(CausalModel causalModel, Set<Literal> w, FormulaFactory f)
             throws InvalidCausalModelException {
         return createModifiedCausalModel(causalModel, w, f);
     }

@@ -28,8 +28,8 @@ class BruteForceCausalitySolver extends CausalitySolver {
      * @return for each AC, true if fulfilled, false else
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    CausalitySolverResult solve(CausalModel causalModel, Set<Literal> context, Formula phi,
-                                Set<Literal> cause, SolvingStrategy solvingStrategy)
+    public CausalitySolverResult solve(CausalModel causalModel, Set<Literal> context, Formula phi,
+                                       Set<Literal> cause, SolvingStrategy solvingStrategy)
             throws InvalidCausalModelException {
         FormulaFactory f = causalModel.getFormulaFactory();
         Set<Literal> evaluation = CausalitySolver.evaluateEquations(causalModel, context);
