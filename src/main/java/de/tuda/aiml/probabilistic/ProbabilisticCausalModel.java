@@ -1,7 +1,6 @@
-package de.tum.in.i4.hp2sat.causality;
+package de.tuda.aiml.probabilistic;
 
-import de.tuda.aiml.deterministic.OriginalHPSolver;
-import de.tuda.aiml.deterministic.UpdatedHPSolver;
+import de.tuda.aiml.probabilistic.Equation;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCauseException;
 import de.tum.in.i4.hp2sat.exceptions.InvalidContextException;
@@ -22,9 +21,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static de.tum.in.i4.hp2sat.causality.SolvingStrategy.*;
+import static de.tuda.aiml.probabilistic.ProbabilisticSolvingStrategy.*;
 
-public class CausalModel {
+public class ProbabilisticCausalModel {
     private String name;
     private Set<Variable> exogenousVariables;
 
@@ -44,15 +43,15 @@ public class CausalModel {
      * @throws InvalidCausalModelException throws an exception if model is not valid: (1) each variable needs to be
      *                                     either defined by an equation or be exogenous; (2) no duplicate definition of
      *                                     variables; (3) no circular dependencies; (4) an exogenous variable must
-     *                                     not be called like {@link SATCausalitySolver#DUMMY_VAR_NAME}
+     *                                     not be called like {@link SATProbabilisticCausalitySolver#DUMMY_VAR_NAME}
      */
-    public CausalModel(String name, Set<Equation> equations, Set<Variable> exogenousVariables,
-                       FormulaFactory formulaFactory) throws InvalidCausalModelException {
+    public ProbabilisticCausalModel(String name, Set<Equation> equations, Set<Variable> exogenousVariables,
+                                    FormulaFactory formulaFactory) throws InvalidCausalModelException {
         this(name, equations, exogenousVariables, formulaFactory, true);
     }
 
     /**
-     * Same as {@link CausalModel#CausalModel(String, Set, Set, FormulaFactory)}, but allows to specify if validity is checked. For
+     * Same as {@link ProbabilisticCausalModel#ProbabilisticCausalModel(String, Set, Set, FormulaFactory)}, but allows to specify if validity is checked. For
      * internal use only.
      *
      * @param name
@@ -61,8 +60,8 @@ public class CausalModel {
      * @param checkValidity
      * @throws InvalidCausalModelException
      */
-    private CausalModel(String name, Set<Equation> equations, Set<Variable> exogenousVariables,
-                        FormulaFactory formulaFactory, boolean checkValidity) throws InvalidCausalModelException {
+    private ProbabilisticCausalModel(String name, Set<Equation> equations, Set<Variable> exogenousVariables,
+                                     FormulaFactory formulaFactory, boolean checkValidity) throws InvalidCausalModelException {
         this.name = name;
         this.exogenousVariables = exogenousVariables;
 
@@ -85,7 +84,7 @@ public class CausalModel {
      * @param causalModel the causal model that is copied
      * @param variables   the variables whose equations are copied
      */
-    CausalModel(CausalModel causalModel, Set<Variable> variables) throws InvalidCausalModelException {
+    ProbabilisticCausalModel(ProbabilisticCausalModel causalModel, Set<Variable> variables) throws InvalidCausalModelException {
         /*
          * we assume that this constructor is called only, if we know that the original causal model is valid.
          * Thereforce, we skip the validity check. */
@@ -109,32 +108,29 @@ public class CausalModel {
      *                                 the equations
      * @throws InvalidPhiException     thrown if phi is invalid: each literal of phi needs to be defined in the equations
      */
-    public CausalitySolverResult isCause(Set<Literal> context, Formula phi, Set<Literal> cause,
-                                         SolvingStrategy solvingStrategy)
+    public ProbabilisticCausalitySolverResult isCause(Set<Literal> context, Formula phi, Set<Literal> cause,
+                                                      ProbabilisticSolvingStrategy solvingStrategy)
             throws InvalidContextException, InvalidCauseException, InvalidPhiException, InvalidCausalModelException {
         validateCausalityCheck(context, phi, cause);
-        CausalitySolver causalitySolver;
+        ProbabilisticCausalitySolver causalitySolver = null;
         if (solvingStrategy == BRUTE_FORCE ) {
-            causalitySolver = new BruteForceCausalitySolver();
+            causalitySolver = new BruteForceProbabilisticCausalitySolver();
         }
-        else if(solvingStrategy == ORIGINAL_HP){
-            causalitySolver = new OriginalHPSolver();
-        }
-        else if(solvingStrategy == UPDATED_HP){
-            causalitySolver = new UpdatedHPSolver();
+        else if(solvingStrategy == PROBABILITY_RAISING){
+            //causalitySolver = new ProbabilityRaising();
         }
         else {
-            causalitySolver = new SATCausalitySolver();
+            //causalitySolver = new SATProbabilisticCausalitySolver();
         }
 
         return causalitySolver.solve(this, context, phi, cause, solvingStrategy);
     }
 
     /**
-     * see {@link #isCause(Set, Formula, Set, SolvingStrategy, SATSolverType)} for a full documentation. The only
+     * see {@link #isCause(Set, Formula, Set, ProbabilisticSolvingStrategy, SATSolverType)} for a full documentation. The only
      * difference is that in the current method the to be used SAT solver can be specified. This only works if the
-     * solving strategy refers to {@link SATCausalitySolver}. Otherwise,
-     * {@link #isCause(Set, Formula, Set, SolvingStrategy)} is called, i.e. the SAT solver type is ignored.
+     * solving strategy refers to {@link SATProbabilisticCausalitySolver}. Otherwise,
+     * {@link #isCause(Set, Formula, Set, ProbabilisticSolvingStrategy)} is called, i.e. the SAT solver type is ignored.
      *
      * @param context
      * @param phi
@@ -147,15 +143,15 @@ public class CausalModel {
      * @throws InvalidPhiException
      * @throws InvalidCausalModelException
      */
-    public CausalitySolverResult isCause(Set<Literal> context, Formula phi, Set<Literal> cause,
-                                         SolvingStrategy solvingStrategy, SATSolverType satSolverType)
+    public ProbabilisticCausalitySolverResult isCause(Set<Literal> context, Formula phi, Set<Literal> cause,
+                                                      ProbabilisticSolvingStrategy solvingStrategy, SATSolverType satSolverType)
             throws InvalidContextException, InvalidCauseException, InvalidPhiException, InvalidCausalModelException {
         if (solvingStrategy == BRUTE_FORCE ) {
             // ignore SAT solver type if solving strategy is not SAT related
             return isCause(context, phi, cause, solvingStrategy);
         } else {
             validateCausalityCheck(context, phi, cause);
-            SATCausalitySolver satCausalitySolver = new SATCausalitySolver();
+            SATProbabilisticCausalitySolver satCausalitySolver = new SATProbabilisticCausalitySolver();
             return satCausalitySolver.solve(this, context, phi, cause, solvingStrategy, satSolverType);
         }
     }
@@ -181,7 +177,7 @@ public class CausalModel {
         boolean existsCircularDependency = equations.parallelStream()
                 .anyMatch(e -> isVariableInEquation(e.getVariable(), e, equations));
         boolean exogenousVariableCalledLikeDummy = exogenousVariables.parallelStream()
-                .anyMatch(e -> e.name().equals(SATCausalitySolver.DUMMY_VAR_NAME));
+                .anyMatch(e -> e.name().equals(SATProbabilisticCausalitySolver.DUMMY_VAR_NAME));
 
         if (!(existsDefinitionForEachVariable && existsNoDuplicateEquationForEachVariable &&
                 !existsCircularDependency && !exogenousVariableCalledLikeDummy))

@@ -1,17 +1,20 @@
-package de.tum.in.i4.hp2sat.causality;
+package de.tuda.aiml.probabilistic;
 
 import org.logicng.formulas.Literal;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
-public class CausalitySolverResult {
+public class ProbabilisticCausalitySolverResult {
     private boolean ac1;
     private boolean ac2;
     private boolean ac3;
     private Set<Literal> cause;
     private Set<Literal> w;
 
-    public CausalitySolverResult(boolean ac1, boolean ac2, boolean ac3, Set<Literal> cause, Set<Literal> w) {
+    public ProbabilisticCausalitySolverResult(boolean ac1, boolean ac2, boolean ac3, Set<Literal> cause, Set<Literal> w) {
         this.ac1 = ac1;
         this.ac2 = ac2;
         this.ac3 = ac3;
@@ -53,7 +56,7 @@ public class CausalitySolverResult {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CausalitySolverResult that = (CausalitySolverResult) o;
+        ProbabilisticCausalitySolverResult that = (ProbabilisticCausalitySolverResult) o;
         return ac1 == that.ac1 &&
                 ac2 == that.ac2 &&
                 ac3 == that.ac3 &&

@@ -38,7 +38,6 @@ public class OriginalHPSolver extends CausalitySolver {
                                      Set<Literal> evaluation, SolvingStrategy solvingStrategy, FormulaFactory f)
             throws InvalidCausalModelException {
         System.out.println("Checking original AC2");
-
         // negate phi
         Formula phiFormula = f.not(phi);
 
@@ -122,8 +121,6 @@ public class OriginalHPSolver extends CausalitySolver {
 
                                 // Check AC2 b)
                                 if(phi.evaluate(new Assignment(evaluationModified))){
-                                    System.out.println("AC2 b) fulfilled");
-                                    System.out.println(z);
                                     return w;
                                 }
                                 else{

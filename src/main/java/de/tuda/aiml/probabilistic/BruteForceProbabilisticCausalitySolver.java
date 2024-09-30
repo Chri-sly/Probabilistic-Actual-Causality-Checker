@@ -1,9 +1,5 @@
-package de.tuda.aiml.deterministic;
+package de.tuda.aiml.probabilistic;
 
-import de.tum.in.i4.hp2sat.causality.CausalModel;
-import de.tum.in.i4.hp2sat.causality.CausalitySolver;
-import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
-import de.tum.in.i4.hp2sat.causality.SolvingStrategy;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 import de.tum.in.i4.hp2sat.util.Util;
 import org.eclipse.collections.impl.set.mutable.UnifiedSet;
@@ -20,32 +16,58 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class UpdatedHPSolver extends CausalitySolver {
-    @Override
-    public CausalitySolverResult solve(CausalModel causalModel, Set<Literal> context, Formula phi, Set<Literal> cause, SolvingStrategy solvingStrategy) throws InvalidCausalModelException {
+class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolver {
+    /**
+     * Overrides {@link ProbabilisticCausalitySolver#solve(ProbabilisticCausalModel, Set, Formula, Set, ProbabilisticSolvingStrategy)}.
+     *
+     * @param causalModel     the underlying causel model
+     * @param context         the context
+     * @param phi             the phi
+     * @param cause           the cause
+     * @param solvingStrategy the applied solving strategy
+     * @return for each AC, true if fulfilled, false else
+     * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
+     */
+     public ProbabilisticCausalitySolverResult solve(ProbabilisticCausalModel causalModel, Set<Literal> context, Formula phi,
+                                Set<Literal> cause, ProbabilisticSolvingStrategy solvingStrategy)
+            throws InvalidCausalModelException {
         FormulaFactory f = causalModel.getFormulaFactory();
-        Set<Literal> evaluation = CausalitySolver.evaluateEquations(causalModel, context);
+        Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModel, context);
         Pair<Boolean, Boolean> ac1Tuple = fulfillsAC1(evaluation, phi, cause);
         boolean ac1 = ac1Tuple.first() && ac1Tuple.second();
         Set<Literal> w = fulfillsAC2(causalModel, phi, cause, context, evaluation, solvingStrategy, f);
         boolean ac2 = w != null;
         boolean ac3 = fulfillsAC3(causalModel, phi, cause, context, evaluation, ac1Tuple.first(), solvingStrategy, f);
-        CausalitySolverResult causalitySolverResult = new CausalitySolverResult(ac1, ac2, ac3, cause, w);
+        ProbabilisticCausalitySolverResult causalitySolverResult = new ProbabilisticCausalitySolverResult(ac1, ac2, ac3, cause, w);
         return causalitySolverResult;
     }
 
-    private Set<Literal> fulfillsAC2(CausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
-                                     Set<Literal> evaluation, SolvingStrategy solvingStrategy, FormulaFactory f)
+    /**
+     * Checks if AC2 is fulfilled.
+     *
+     * @param causalModel     the underlying causal model
+     * @param phi             the phi
+     * @param cause           the cause for which we check AC2
+     * @param context         the context
+     * @param evaluation      the original evaluation of variables
+     * @param solvingStrategy the solving strategy
+     * @param f               a formula factory
+     * @return returns W if AC2 fulfilled, else null
+     * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
+     */
+    private Set<Literal> fulfillsAC2(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
+                                     Set<Literal> evaluation, ProbabilisticSolvingStrategy solvingStrategy, FormulaFactory f)
             throws InvalidCausalModelException {
-        System.out.println("Checking updated AC2");
+        System.out.println("Checking original AC2");
 
-        Formula phiFormula = f.not(phi); // negate phi
+        // negate phi
+        Formula phiFormula = f.not(phi);
 
         // create copy of original causal model
-        CausalModel causalModelModified = createModifiedCausalModelForCause(causalModel, cause, f);
+        ProbabilisticCausalModel causalModelModified = createModifiedCausalModelForCause(causalModel, cause, f);
 
         // evaluate causal model with setting x' for cause
-        Set<Literal> evaluationModified = CausalitySolver.evaluateEquations(causalModelModified, context);
+        Set<Literal> evaluationModified = ProbabilisticCausalitySolver.evaluateEquations(causalModelModified, context);
         // check if not(phi) evaluates to true for empty W -> if yes, no further investigation necessary
         if (phiFormula.evaluate(new Assignment(evaluationModified))) {
             return new HashSet<>();
@@ -63,6 +85,7 @@ public class UpdatedHPSolver extends CausalitySolver {
         // get all possible Ws, i.e create power set of the evaluation
         List<Set<Literal>> allW = (new Util<Literal>()).generatePowerSet(wVariables);
 
+        // Remove all exogenous variables for Z
         Set<Literal> zVariables = evaluation.stream()
                 .filter(l -> !causalModel.getExogenousVariables().contains(l.variable()))
                 .collect(Collectors.toSet());
@@ -70,6 +93,7 @@ public class UpdatedHPSolver extends CausalitySolver {
         List<Set<Literal>> allZ = (new Util<Literal>()).generatePowerSet(zVariables);
         List<Set<Literal>> allZs = new ArrayList<Set<Literal>>();
 
+        // Only keep the powersets if they are a subset of the cause
         for(Set<Literal> z : allZ){
             if(z.containsAll(cause)){
                 allZs.add(z);
@@ -99,9 +123,9 @@ public class UpdatedHPSolver extends CausalitySolver {
                             continue;
                         }
                         // create copy of modified causal model
-                        CausalModel causalModelModifiedW = createModifiedCausalModelForW(causalModelModified, wAssig, f);
+                        ProbabilisticCausalModel causalModelModifiedW = createModifiedCausalModelForW(causalModelModified, wAssig, f);
                         // evaluate all variables
-                        evaluationModified = CausalitySolver.evaluateEquations(causalModelModifiedW, context);
+                        evaluationModified = ProbabilisticCausalitySolver.evaluateEquations(causalModelModifiedW, context);
 
                         // Check AC2 a)
                         if (phiFormula.evaluate(new Assignment(evaluationModified))) {
@@ -109,35 +133,26 @@ public class UpdatedHPSolver extends CausalitySolver {
                             zWithoutX.addAll(z);
                             zWithoutX.removeAll(cause);
                             List<Set<Literal>> ZStar = (new Util<Literal>()).generatePowerSet(zWithoutX);
+                            // check for same W and cause if phi holds
+                            ProbabilisticCausalModel causalModelModW = createModifiedCausalModelForW(causalModel, wAssig, f);
+                            boolean checkZSubsets = true;
 
-                            boolean checkWSubsets = true;
-                            List<Set<Literal>> wSubsets = (new Util<Literal>()).generatePowerSet(wAssig);
+                            for(Set<Literal> zStar : ZStar){
+                                ProbabilisticCausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModW, zStar, f);
+                                evaluationModified = ProbabilisticCausalitySolver.evaluateEquations(causalModelModWModZStar, context);
 
-                            for(Set<Literal> wSub : wSubsets){
-
-                                // check for same W and cause if phi holds
-                                CausalModel causalModelModW = createModifiedCausalModelForW(causalModel, wSub, f);
-
-                                for(Set<Literal> zStar : ZStar){
-                                    CausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModW, zStar, f);
-                                    evaluationModified = CausalitySolver.evaluateEquations(causalModelModWModZStar, context);
-
-                                    // Check AC2 b)
-                                    if(phi.evaluate(new Assignment(evaluationModified))){
-                                    }
-                                    else{
-                                        checkWSubsets = false;
-                                        break;
-                                    }
-                                }
-                                if(checkWSubsets == false){
-                                    break;
+                                // Check AC2 b)
+                                if(phi.evaluate(new Assignment(evaluationModified))){
+                                    System.out.println("AC2 b) fulfilled");
+                                    System.out.println(z);
+                                    return w;
                                 }
                                 else{
-                                    continue;
+                                    checkZSubsets = false;
+                                    break;
                                 }
                             }
-                            if(checkWSubsets){
+                            if(checkZSubsets){
                                 return w;
                             }
                             continue;
@@ -149,9 +164,20 @@ public class UpdatedHPSolver extends CausalitySolver {
 
         return null;
     }
-
-    private boolean fulfillsAC3(CausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
-                                Set<Literal> evaluation, boolean phiOccurred, SolvingStrategy solvingStrategy,
+    /**
+     * Checks if AC3 is fulfilled
+     *
+     * @param causalModel     the underlying causal model
+     * @param phi             the phi
+     * @param cause           the cause for which we check AC2
+     * @param context         the context
+     * @param evaluation      the original evaluation of variables
+     * @param solvingStrategy the solving strategy
+     * @param f               a formula factory
+     * @return true if A3 fulfilled, else false
+     */
+    private boolean fulfillsAC3(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
+                                Set<Literal> evaluation, boolean phiOccurred, ProbabilisticSolvingStrategy solvingStrategy,
                                 FormulaFactory f)
             throws InvalidCausalModelException {
         if (cause.size() > 1 && phiOccurred) {
