@@ -1,7 +1,7 @@
 package de.tuda.aiml;
 
 import de.tuda.aiml.responsibility.BlameSolver;
-import de.tuda.aiml.util.ExampleProviderBlame;
+import de.tuda.aiml.util.DeterministicExampleProvider;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
 import de.tum.in.i4.hp2sat.causality.SolvingStrategy;
@@ -17,7 +17,7 @@ import java.util.*;
 
 public class Playground {
     public static void main(String[] args) throws InvalidCausalModelException, InvalidContextException, InvalidCauseException, InvalidPhiException {
-        CausalModel firingSquad = ExampleProviderBlame.firingSquad();
+        CausalModel firingSquad = DeterministicExampleProvider.firingSquad();
         FormulaFactory f = firingSquad.getFormulaFactory();
         Set<Literal> context1 = new HashSet<>(Arrays.asList(
                 f.literal("ONE_exo", true), f.literal("TWO_exo", false), f.literal("THREE_exo", false)

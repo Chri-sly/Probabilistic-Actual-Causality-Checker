@@ -22,12 +22,11 @@ public class CausalityPullOutInstanceTest {
     // #################################################################################################################
     // ################################################ ROCK-THROWING ##################################################
     // #################################################################################################################
-    //region ROCK-THROWING
     //region [ROCK-THROWING] BT_exo = 1; ST_exo = 1
     @Test
-    public void Prob_Rock_Throwing_PullOutProbability_Susy_is_cause_prob() throws Exception {
-        CausalModel billySuzy1 = ProbabilisticExampleProvider.billyAndSuzyHit();
-        FormulaFactory f = billySuzy1.getFormulaFactory();
+    public void Prob_Rock_Throwing_PullOutProbability_Prob_Susy_is_cause() throws Exception {
+        CausalModel billySuzy = ProbabilisticExampleProvider.billyAndSuzyHit();
+        FormulaFactory f = billySuzy.getFormulaFactory();
 
         Set<Literal> context1 = new HashSet<>(Arrays.asList(
                 f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", true), f.literal("BillyHits_exo", true)));
@@ -57,16 +56,16 @@ public class CausalityPullOutInstanceTest {
         know.add(f.literal("BT_exo", true));
         know.add(f.literal("ST_exo", true));
 
-        PullOutProbability pullOutProbability = new PullOutProbability(billySuzy1, contexts, phi, cause, SolvingStrategy.BRUTE_FORCE, map, know);
+        PullOutProbability pullOutProbability = new PullOutProbability(billySuzy, contexts, phi, cause, SolvingStrategy.BRUTE_FORCE, map, know);
         double result = pullOutProbability.solve();
 
         assertEquals(0.9/0.98, result, 1e-7);
     }
 
     @Test
-    public void Prob_Rock_Throwing_PullOutProbability_Susy_is_cause_prob_know_Billy_missed() throws Exception {
-        CausalModel billySuzy1 = ProbabilisticExampleProvider.billyAndSuzyHit();
-        FormulaFactory f = billySuzy1.getFormulaFactory();
+    public void Prob_Rock_Throwing_PullOutProbability_Prob_Susy_is_cause_know_Billy_missed() throws Exception {
+        CausalModel billySuzy = ProbabilisticExampleProvider.billyAndSuzyHit();
+        FormulaFactory f = billySuzy.getFormulaFactory();
 
         Set<Literal> context1 = new HashSet<>(Arrays.asList(
                 f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", true), f.literal("BillyHits_exo", true)));
@@ -97,27 +96,105 @@ public class CausalityPullOutInstanceTest {
         know.add(f.literal("ST_exo", true));
         know.add(f.literal("BillyHits_exo", false));
 
-        PullOutProbability pullOutProbability = new PullOutProbability(billySuzy1, contexts, phi, cause, SolvingStrategy.BRUTE_FORCE, map, know);
+        PullOutProbability pullOutProbability = new PullOutProbability(billySuzy, contexts, phi, cause, SolvingStrategy.BRUTE_FORCE, map, know);
         double result = pullOutProbability.solve();
 
         assertEquals(1.0, result, 1e-7);
     }
 
     @Test
-    public void Rock_Throwing_PullOutProbability_Prob() throws Exception {
+    public void Prob_Rock_Throwing_PullOutProbability_Prob_Billy_is_cause() throws Exception {
+        CausalModel billySuzy = ProbabilisticExampleProvider.billyAndSuzyHit();
+        FormulaFactory f = billySuzy.getFormulaFactory();
+
+        Set<Literal> context1 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", true), f.literal("BillyHits_exo", true)));
+        Set<Literal> context2 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", true), f.literal("BillyHits_exo", false)));
+        Set<Literal> context3 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", false), f.literal("BillyHits_exo", true)));
+        Set<Literal> context4 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", false), f.literal("BillyHits_exo", false)));
+
+        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("BT")));
+        Formula phi = f.variable("BS");
+
+        List<Set<Literal>> contexts = new ArrayList<>();
+        contexts.add(context1);
+        contexts.add(context2);
+        contexts.add(context3);
+        contexts.add(context4);
+
+        Map<Variable, Double> map = new HashMap<>();
+        map.put(f.variable("BT_exo"), 1.0);
+        map.put(f.variable("ST_exo"), 1.0);
+        map.put(f.variable("SuzyHits_exo"), 0.9);
+        map.put(f.variable("BillyHits_exo"), 0.8);
+
+        Set<Literal> know = new HashSet<>();
+        know.add(f.literal("BT_exo", true));
+        know.add(f.literal("ST_exo", true));
+
+        PullOutProbability pullOutProbability = new PullOutProbability(billySuzy, contexts, phi, cause, SolvingStrategy.BRUTE_FORCE, map, know);
+        double result = pullOutProbability.solve();
+
+        assertEquals(0.08 / 0.98, result, 1e-7);
+    }
+
+    @Test
+    public void Prob_Rock_Throwing_PullOutProbability_Prob_Billy_is_cause_know_Suzy_missed() throws Exception {
+        CausalModel billySuzy = ProbabilisticExampleProvider.billyAndSuzyHit();
+        FormulaFactory f = billySuzy.getFormulaFactory();
+
+        Set<Literal> context1 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", true), f.literal("BillyHits_exo", true)));
+        Set<Literal> context2 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", true), f.literal("BillyHits_exo", false)));
+        Set<Literal> context3 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", false), f.literal("BillyHits_exo", true)));
+        Set<Literal> context4 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SuzyHits_exo", false), f.literal("BillyHits_exo", false)));
+
+        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("BT")));
+        Formula phi = f.variable("BS");
+
+        List<Set<Literal>> contexts = new ArrayList<>();
+        contexts.add(context1);
+        contexts.add(context2);
+        contexts.add(context3);
+        contexts.add(context4);
+
+        Map<Variable, Double> map = new HashMap<>();
+        map.put(f.variable("BT_exo"), 1.0);
+        map.put(f.variable("ST_exo"), 1.0);
+        map.put(f.variable("SuzyHits_exo"), 0.9);
+        map.put(f.variable("BillyHits_exo"), 0.8);
+
+        Set<Literal> know = new HashSet<>();
+        know.add(f.literal("BT_exo", true));
+        know.add(f.literal("ST_exo", true));
+        know.add(f.literal("SuzyHits_exo", false));
+
+        PullOutProbability pullOutProbability = new PullOutProbability(billySuzy, contexts, phi, cause, SolvingStrategy.BRUTE_FORCE, map, know);
+        double result = pullOutProbability.solve();
+
+        assertEquals(1.0, result, 1e-7);
+    }
+
+    @Test
+    public void Prob_Rock_Throwing_PullOutProbability_Prob() throws Exception {
         CausalModel billySuzy = ProbabilisticExampleProvider.billyAndSuzyHit();
         FormulaFactory f = billySuzy.getFormulaFactory();
 
         List<Set<Literal>> contexts = new ArrayList<>();
 
+        // Create 1000 contexts by assigning the exogenous variables value 1 with the respective probability
         for (int i = 0; i < 1000; i++) {
-            double random = Math.random();
-            double random2 = Math.random();
             Set<Literal> context = new HashSet<>();
             context.add(f.literal("BT_exo", true));
             context.add(f.literal("ST_exo", true));
-            boolean b = (random < 0.9) ? context.add(f.literal("SuzyHits_exo", true)) : context.add(f.literal("SuzyHits_exo", false));
-            boolean c = (random2 < 0.8) ? context.add(f.literal("BillyHits_exo", true)) : context.add(f.literal("BillyHits_exo", false));
+            boolean b = (Math.random() < 0.9) ? context.add(f.literal("SuzyHits_exo", true)) : context.add(f.literal("SuzyHits_exo", false));
+            boolean c = (Math.random() < 0.8) ? context.add(f.literal("BillyHits_exo", true)) : context.add(f.literal("BillyHits_exo", false));
             contexts.add(context);
         }
         Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("ST")));
@@ -294,5 +371,61 @@ public class CausalityPullOutInstanceTest {
 
         System.out.println(result);
         assertEquals(1.0, result, 1e-7);
+    }
+
+    // #################################################################################################################
+    // ################################################ ROCK-THROWING BOTTLE TOPPLES OVER ##############################
+    // #################################################################################################################
+    //region Rock-Throwing Bottle topples over
+    //region [Rock-Throwing Bottle topples over] MT_exo = 1; OF_exo = 1
+    @Test
+    public void Rock_Throwing_Botle_Topples_Over() throws Exception {
+        CausalModel billyAndSuzyTopple = ProbabilisticExampleProvider.billyAndSuzyTopple();
+        FormulaFactory f = billyAndSuzyTopple.getFormulaFactory();
+
+        Set<Literal> context1 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",false), f.literal("ToppleBillyHit_exo", false), f.literal("ToppleSuzyHit_exo", false)));
+        Set<Literal> context2 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",false), f.literal("ToppleBillyHit_exo", false), f.literal("ToppleSuzyHit_exo", true)));
+        Set<Literal> context3 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",false), f.literal("ToppleBillyHit_exo", true), f.literal("ToppleSuzyHit_exo", false)));
+        Set<Literal> context4 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",false), f.literal("ToppleBillyHit_exo", true), f.literal("ToppleSuzyHit_exo", true)));
+        Set<Literal> context5 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",true), f.literal("ToppleBillyHit_exo", false), f.literal("ToppleSuzyHit_exo", false)));
+        Set<Literal> context6 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",true), f.literal("ToppleBillyHit_exo", false), f.literal("ToppleSuzyHit_exo", true)));
+        Set<Literal> context7 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",true), f.literal("ToppleBillyHit_exo", true), f.literal("ToppleSuzyHit_exo", false)));
+        Set<Literal> context8 = new HashSet<>(Arrays.asList(
+                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("ToppleBothHit_exo",true), f.literal("ToppleBillyHit_exo", true), f.literal("ToppleSuzyHit_exo", true)));
+
+        Set<Literal> cause = new HashSet<>(Arrays.asList(f.variable("BT")));
+        Formula phi = f.variable("BTO");
+
+        List<Set<Literal>> contexts = new ArrayList<>();
+        contexts.add(context1);
+        contexts.add(context2);
+        contexts.add(context3);
+        contexts.add(context4);
+        contexts.add(context5);
+        contexts.add(context6);
+        contexts.add(context7);
+        contexts.add(context8);
+
+        Map<Variable, Double> map = new HashMap<>();
+        map.put(f.variable("BT_exo"), 1.0);
+        map.put(f.variable("ST_exo"), 1.0);
+        map.put(f.variable("ToppleBothHit_exo"), 0.7);
+        map.put(f.variable("ToppleBillyHit_exo"), 0.2);
+        map.put(f.variable("ToppleSuzyHit_exo"), 0.2);
+
+        Set<Literal> know = new HashSet<>();
+
+        PullOutProbability pullOutProbability = new PullOutProbability(billyAndSuzyTopple, contexts, phi, cause, SolvingStrategy.UPDATED_HP, map, know);
+        double result = pullOutProbability.solve();
+
+        System.out.println(result);
+        assertEquals(0.84, result, 1e-7);
     }
 }

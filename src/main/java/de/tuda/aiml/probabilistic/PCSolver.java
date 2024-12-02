@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolver {
+class PCSolver extends ProbabilisticCausalitySolver {
     /**
      * Overrides {@link ProbabilisticCausalitySolver#solve(ProbabilisticCausalModel, Set, Formula, Set, ProbabilisticSolvingStrategy)}.
      *
@@ -35,9 +35,9 @@ class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolve
         Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModel, context);
         Pair<Boolean, Boolean> ac1Tuple = fulfillsAC1(evaluation, phi, cause);
         boolean ac1 = ac1Tuple.first() && ac1Tuple.second();
-        Set<Literal> w = fulfillsAC2(causalModel, phi, cause, context, evaluation, solvingStrategy, f);
+        Set<Literal> w = fulfillsAC2(causalModel, phi, cause, context, evaluation, f);
         boolean ac2 = w != null;
-        boolean ac3 = fulfillsAC3(causalModel, phi, cause, context, evaluation, ac1Tuple.first(), solvingStrategy, f);
+        boolean ac3 = fulfillsAC3(causalModel, phi, cause, context, evaluation, ac1Tuple.first(), f);
         ProbabilisticCausalitySolverResult causalitySolverResult = new ProbabilisticCausalitySolverResult(ac1, ac2, ac3, cause, w);
         return causalitySolverResult;
     }
@@ -50,15 +50,13 @@ class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolve
      * @param cause           the cause for which we check AC2
      * @param context         the context
      * @param evaluation      the original evaluation of variables
-     * @param solvingStrategy the solving strategy
      * @param f               a formula factory
      * @return returns W if AC2 fulfilled, else null
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
     private Set<Literal> fulfillsAC2(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
-                                     Set<Literal> evaluation, ProbabilisticSolvingStrategy solvingStrategy, FormulaFactory f)
+                                     Set<Literal> evaluation, FormulaFactory f)
             throws InvalidCausalModelException {
-        System.out.println("Checking original AC2");
 
         // negate phi
         Formula phiFormula = f.not(phi);
@@ -79,7 +77,7 @@ class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolve
          * remove exogenous variables from evaluation as they are not needed for computing the Ws. Furthermore,
          * all variables in the cause also must not be in W. */
         Set<Literal> wVariables = evaluation.stream()
-                .filter(l -> !causalModel.getExogenousVariables().contains(l.variable()) &&
+                .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable()) &&
                         !(causeVariables.contains(l.variable())))
                 .collect(Collectors.toSet());
         // get all possible Ws, i.e create power set of the evaluation
@@ -87,7 +85,7 @@ class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolve
 
         // Remove all exogenous variables for Z
         Set<Literal> zVariables = evaluation.stream()
-                .filter(l -> !causalModel.getExogenousVariables().contains(l.variable()))
+                .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable()))
                 .collect(Collectors.toSet());
 
         List<Set<Literal>> allZ = (new Util<Literal>()).generatePowerSet(zVariables);
@@ -172,14 +170,11 @@ class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolve
      * @param cause           the cause for which we check AC2
      * @param context         the context
      * @param evaluation      the original evaluation of variables
-     * @param solvingStrategy the solving strategy
      * @param f               a formula factory
      * @return true if A3 fulfilled, else false
      */
     private boolean fulfillsAC3(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
-                                Set<Literal> evaluation, boolean phiOccurred, ProbabilisticSolvingStrategy solvingStrategy,
-                                FormulaFactory f)
-            throws InvalidCausalModelException {
+                                Set<Literal> evaluation, boolean phiOccurred, FormulaFactory f) throws InvalidCausalModelException {
         if (cause.size() > 1 && phiOccurred) {
 
             // get all subsets of cause
@@ -192,7 +187,7 @@ class BruteForceProbabilisticCausalitySolver extends ProbabilisticCausalitySolve
              * for AC1, we only need to check if the current cause subset, as we checked for phi before */
             for (Set<Literal> c : allSubsetsOfCause) {
                 if (evaluation.containsAll(c) &&
-                        fulfillsAC2(causalModel, phi, c, context, evaluation, solvingStrategy, f) != null) {
+                        fulfillsAC2(causalModel, phi, c, context, evaluation, f) != null) {
                     return false;
                 }
             }

@@ -1,9 +1,11 @@
 package de.tuda.aiml.deterministic;
 
+import de.tuda.aiml.util.DeterministicExampleProvider;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
 import de.tum.in.i4.hp2sat.causality.SATSolverType;
 import de.tum.in.i4.hp2sat.causality.SolvingStrategy;
+import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 import de.tum.in.i4.hp2sat.util.ExampleProvider;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -58,9 +60,11 @@ public class OriginalCausalitySolverInstanceTest {
     //region PRISONERS
     //region [PRISONERS] A_exo = 1; B_exo = 0; C_exo = 1
     // The example that Halpern mentions in chapter 2.8 AC2 original vs AC2 updated
+
+    // Wrong case of Original Variant
     @Test
     public void Original_Should_FulfillAllACs_When_A_IsCauseFor_D() throws Exception {
-        CausalModel prisoners = ExampleProvider.prisoners();
+        CausalModel prisoners = DeterministicExampleProvider.prisoners();
         FormulaFactory f = prisoners.getFormulaFactory();
         Set<Literal> context = new HashSet<>(Arrays.asList(
                 f.literal("A_exo", true), f.literal("B_exo", false),
@@ -78,26 +82,8 @@ public class OriginalCausalitySolverInstanceTest {
     }
 
     @Test
-    public void Updated_Should_FulfillNotAC2_When_A_IsCauseFor_D() throws Exception {
-        CausalModel prisoners = ExampleProvider.prisoners();
-        FormulaFactory f = prisoners.getFormulaFactory();
-        Set<Literal> context = new HashSet<>(Arrays.asList(
-                f.literal("A_exo", true), f.literal("B_exo", false),
-                f.literal("C_exo", true)));
-        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("A")));
-        Formula phi = f.variable("D");
-
-        CausalitySolverResult causalitySolverResultExpectedEval =
-                new CausalitySolverResult(true, false, true, cause, null);
-
-        CausalitySolverResult causalitySolverResultActual = updatedHPSolver.solve(prisoners, context, phi, cause, SolvingStrategy.UPDATED_HP);
-
-        assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
-    }
-
-    @Test
-    public void Original_and_Updated_Should_FulfillAllACs_When_C_IsCauseFor_D() throws Exception {
-        CausalModel prisoners = ExampleProvider.prisoners();
+    public void Original_Should_FulfillAllACs_When_C_IsCauseFor_D() throws Exception {
+        CausalModel prisoners = DeterministicExampleProvider.prisoners();
         FormulaFactory f = prisoners.getFormulaFactory();
         Set<Literal> context = new HashSet<>(Arrays.asList(
                 f.literal("A_exo", true), f.literal("B_exo", false),
@@ -108,14 +94,105 @@ public class OriginalCausalitySolverInstanceTest {
         CausalitySolverResult causalitySolverResultExpectedEval =
                 new CausalitySolverResult(true, true, true, cause, new HashSet<>());
 
-        Map<SolvingStrategy, Set<CausalitySolverResult>> causalitySolverResultsExpected =
-                new HashMap<SolvingStrategy, Set<CausalitySolverResult>>() {
-                    {
-                        put(SolvingStrategy.ORIGINAL_HP, new HashSet<>(Collections.singletonList(causalitySolverResultExpectedEval)));
-                        put(SolvingStrategy.UPDATED_HP, new HashSet<>(Collections.singletonList(causalitySolverResultExpectedEval)));
-                    }
-                };
 
-        testSolve(prisoners, context, phi, cause, causalitySolverResultsExpected);
+        CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(prisoners, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
+
+        assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
+    }
+
+    @Test
+    public void Original_Should_Not_FulfillAC1_When_B_IsCauseFor_D() throws InvalidCausalModelException {
+        CausalModel prisoners = DeterministicExampleProvider.prisoners();
+        FormulaFactory f = prisoners.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("A_exo", true), f.literal("B_exo", false),
+                f.literal("C_exo", true)));
+        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("B")));
+        Formula phi = f.variable("D");
+
+        CausalitySolverResult causalitySolverResultExpectedEval =
+                new CausalitySolverResult(false, false, true, cause, null);
+
+        CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(prisoners, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
+
+        assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
+    }
+
+    //region [PRISONERS] A_exo = 1; B_exo = 1; C_exo = 0
+    @Test
+    public void Original_Should_FulfillAllACs_When_A_IsCauseFor_D_B_Shoots_C_Not() throws Exception {
+        CausalModel prisoners = DeterministicExampleProvider.prisoners();
+        FormulaFactory f = prisoners.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("A_exo", true), f.literal("B_exo", true),
+                f.literal("C_exo", false)));
+        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("A")));
+        Formula phi = f.variable("D");
+
+        CausalitySolverResult causalitySolverResultExpectedEval =
+                new CausalitySolverResult(true, true, true, cause,
+                        new HashSet<>());
+
+        CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(prisoners, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
+
+        assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
+    }
+
+    @Test
+    public void Original_Should_FulfillAllAC_When_B_IsCauseFor_D_B_Shoots_C_Not() throws InvalidCausalModelException {
+        CausalModel prisoners = DeterministicExampleProvider.prisoners();
+        FormulaFactory f = prisoners.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("A_exo", true), f.literal("B_exo", true),
+                f.literal("C_exo", false)));
+        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("B")));
+        Formula phi = f.variable("D");
+
+        CausalitySolverResult causalitySolverResultExpectedEval =
+                new CausalitySolverResult(true, true, true, cause, new HashSet<>());
+
+        CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(prisoners, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
+
+        assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
+    }
+
+    //region [PRISONERS] A_exo = 0; B_exo = 1; C_exo = 1
+
+    @Test
+    public void Original_Should_Not_FulfillAC1_When_A_IsCauseFor_D_B_Shoots_A_Not_Load() throws Exception {
+        CausalModel prisoners = DeterministicExampleProvider.prisoners();
+        FormulaFactory f = prisoners.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("A_exo", false), f.literal("B_exo", true),
+                f.literal("C_exo", true)));
+        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("A")));
+        Formula phi = f.variable("D");
+
+        CausalitySolverResult causalitySolverResultExpectedEval =
+                new CausalitySolverResult(false, false, true, cause, null);
+
+        CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(prisoners, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
+
+        assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
+    }
+
+    // Wrong case of Original Variant
+    @Test
+    public void Original_Should_FulfillAllAC_When_B_IsCauseFor_D_B_Shoots_A_Not_Load() throws InvalidCausalModelException {
+        CausalModel prisoners = DeterministicExampleProvider.prisoners();
+        FormulaFactory f = prisoners.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("A_exo", false), f.literal("B_exo", true),
+                f.literal("C_exo", true)));
+        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("B")));
+        Formula phi = f.variable("D");
+
+        CausalitySolverResult causalitySolverResultExpectedEval =
+                new CausalitySolverResult(true, true, true, cause,
+                        new HashSet<>(Arrays.asList(f.literal("A", true), f.literal("C", false))));
+
+        CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(prisoners, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
+
+        assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
     }
 }

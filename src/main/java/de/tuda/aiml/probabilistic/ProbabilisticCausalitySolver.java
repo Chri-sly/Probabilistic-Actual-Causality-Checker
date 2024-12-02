@@ -1,5 +1,6 @@
 package de.tuda.aiml.probabilistic;
 
+import de.tum.in.i4.hp2sat.causality.Equation;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 import org.eclipse.collections.impl.set.mutable.UnifiedSet;
 import org.graphstream.graph.Graph;
@@ -11,7 +12,7 @@ import org.logicng.util.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 
-abstract class ProbabilisticCausalitySolver {
+public abstract class ProbabilisticCausalitySolver {
     /**
      * Checks AC1, AC2 and AC3 given a causal model, a cause, a context and phi and a solving strategy.
      *
@@ -36,7 +37,7 @@ abstract class ProbabilisticCausalitySolver {
      * @return a tuple where the first item indicates whether phi occurred and the second item whether the cause
      * occurred
      */
-    Pair<Boolean, Boolean> fulfillsAC1(Set<Literal> evaluation, Formula phi, Set<Literal> cause) {
+    public static Pair<Boolean, Boolean> fulfillsAC1(Set<Literal> evaluation, Formula phi, Set<Literal> cause) {
         boolean phiEvaluation = phi.evaluate(new Assignment(evaluation));
         return new Pair<>(phiEvaluation, evaluation.containsAll(cause));
     }
@@ -46,7 +47,7 @@ abstract class ProbabilisticCausalitySolver {
      * IMPORTANT: This method is not implemented efficiently. In particular for large models, the execution time will
      * be extremely large as we create the powerset of ALL variables.
      *
-     * @param causalModel the underlying causel model
+     * @param causalModel the underlying causal model
      * @param context     the context
      * @param phi         the phi
      * @return set of all causes, i.e. AC1-AC3 fulfilled, as set of results
@@ -58,7 +59,7 @@ abstract class ProbabilisticCausalitySolver {
         // compute all possible combination of primitive events
         Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModel, context);
         Set<Literal> evaluationWithoutExogenousVariables = evaluation.stream()
-                .filter(l -> !causalModel.getExogenousVariables().contains(l.variable())).collect(Collectors.toSet());
+                .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable())).collect(Collectors.toSet());
         List<Set<Literal>> allPotentialCauses = new UnifiedSet<>(evaluationWithoutExogenousVariables).powerSet()
                 .stream().map(s -> s.toImmutable().castToSet())
                 .sorted(Comparator.comparingInt(Set::size))
@@ -91,7 +92,7 @@ abstract class ProbabilisticCausalitySolver {
      * @return evaluation for all variables within the causal model (endo and exo); positive literal means true,
      * negative means false
      */
-    static Set<Literal> evaluateEquations(ProbabilisticCausalModel causalModel, Set<Literal> context) {
+    public static Set<Literal> evaluateEquations(ProbabilisticCausalModel causalModel, Set<Literal> context) {
         // initially, we can only assign the exogenous variables as defined by the context
         Assignment assignment = new Assignment(context);
         for (Equation equation : causalModel.getEquationsSorted()) {
@@ -124,7 +125,7 @@ abstract class ProbabilisticCausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    ProbabilisticCausalModel createModifiedCausalModelForCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
+    protected ProbabilisticCausalModel createModifiedCausalModelForCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
             throws InvalidCausalModelException {
         return createModifiedCausalModel(causalModel, cause, f);
     }

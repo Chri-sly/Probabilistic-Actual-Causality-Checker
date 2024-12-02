@@ -1,6 +1,6 @@
 package de.tuda.aiml.probabilistic;
 
-import de.tuda.aiml.probabilistic.Equation;
+import de.tum.in.i4.hp2sat.causality.Equation;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCauseException;
 import de.tum.in.i4.hp2sat.exceptions.InvalidContextException;
@@ -25,13 +25,15 @@ import static de.tuda.aiml.probabilistic.ProbabilisticSolvingStrategy.*;
 
 public class ProbabilisticCausalModel {
     private String name;
-    private Set<Variable> exogenousVariables;
+    private Map<Variable, Double> exogenousVariables;
 
     private Map<Variable, Equation> variableEquationMap;
     private Graph graph;
     private Graph graphReversed;
-    private List<Equation> equationsSorted; // according to topological sort
+    private List<Equation> equationsSorted;
     private FormulaFactory formulaFactory;
+
+    static final String DUMMY_VAR_NAME = "_dummy";
 
     /**
      * Creates a new causal model
@@ -43,16 +45,16 @@ public class ProbabilisticCausalModel {
      * @throws InvalidCausalModelException throws an exception if model is not valid: (1) each variable needs to be
      *                                     either defined by an equation or be exogenous; (2) no duplicate definition of
      *                                     variables; (3) no circular dependencies; (4) an exogenous variable must
-     *                                     not be called like {@link SATProbabilisticCausalitySolver#DUMMY_VAR_NAME}
+     *                                     not be called
      */
-    public ProbabilisticCausalModel(String name, Set<Equation> equations, Set<Variable> exogenousVariables,
+    public ProbabilisticCausalModel(String name, Set<Equation> equations, Map<Variable, Double> exogenousVariables,
                                     FormulaFactory formulaFactory) throws InvalidCausalModelException {
         this(name, equations, exogenousVariables, formulaFactory, true);
     }
 
     /**
-     * Same as {@link ProbabilisticCausalModel#ProbabilisticCausalModel(String, Set, Set, FormulaFactory)}, but allows to specify if validity is checked. For
-     * internal use only.
+     * Same as {@link ProbabilisticCausalModel#ProbabilisticCausalModel(String, Set, Map, FormulaFactory)}, but allows
+     * specifying if validity is checked. For internal use only.
      *
      * @param name
      * @param equations
@@ -60,7 +62,7 @@ public class ProbabilisticCausalModel {
      * @param checkValidity
      * @throws InvalidCausalModelException
      */
-    private ProbabilisticCausalModel(String name, Set<Equation> equations, Set<Variable> exogenousVariables,
+    private ProbabilisticCausalModel(String name, Set<Equation> equations, Map<Variable, Double> exogenousVariables,
                                      FormulaFactory formulaFactory, boolean checkValidity) throws InvalidCausalModelException {
         this.name = name;
         this.exogenousVariables = exogenousVariables;
@@ -114,46 +116,13 @@ public class ProbabilisticCausalModel {
         validateCausalityCheck(context, phi, cause);
         ProbabilisticCausalitySolver causalitySolver = null;
         if (solvingStrategy == BRUTE_FORCE ) {
-            causalitySolver = new BruteForceProbabilisticCausalitySolver();
+            causalitySolver = new PCSolver();
         }
         else if(solvingStrategy == PROBABILITY_RAISING){
             //causalitySolver = new ProbabilityRaising();
         }
-        else {
-            //causalitySolver = new SATProbabilisticCausalitySolver();
-        }
 
         return causalitySolver.solve(this, context, phi, cause, solvingStrategy);
-    }
-
-    /**
-     * see {@link #isCause(Set, Formula, Set, ProbabilisticSolvingStrategy, SATSolverType)} for a full documentation. The only
-     * difference is that in the current method the to be used SAT solver can be specified. This only works if the
-     * solving strategy refers to {@link SATProbabilisticCausalitySolver}. Otherwise,
-     * {@link #isCause(Set, Formula, Set, ProbabilisticSolvingStrategy)} is called, i.e. the SAT solver type is ignored.
-     *
-     * @param context
-     * @param phi
-     * @param cause
-     * @param solvingStrategy
-     * @param satSolverType
-     * @return
-     * @throws InvalidContextException
-     * @throws InvalidCauseException
-     * @throws InvalidPhiException
-     * @throws InvalidCausalModelException
-     */
-    public ProbabilisticCausalitySolverResult isCause(Set<Literal> context, Formula phi, Set<Literal> cause,
-                                                      ProbabilisticSolvingStrategy solvingStrategy, SATSolverType satSolverType)
-            throws InvalidContextException, InvalidCauseException, InvalidPhiException, InvalidCausalModelException {
-        if (solvingStrategy == BRUTE_FORCE ) {
-            // ignore SAT solver type if solving strategy is not SAT related
-            return isCause(context, phi, cause, solvingStrategy);
-        } else {
-            validateCausalityCheck(context, phi, cause);
-            SATProbabilisticCausalitySolver satCausalitySolver = new SATProbabilisticCausalitySolver();
-            return satCausalitySolver.solve(this, context, phi, cause, solvingStrategy, satSolverType);
-        }
     }
 
 
@@ -165,19 +134,19 @@ public class ProbabilisticCausalModel {
      * @return true if valid
      * @throws InvalidCausalModelException thrown if invalid
      */
-    private boolean isValid(Set<Equation> equations, Set<Variable> exogenousVariables)
+    private boolean isValid(Set<Equation> equations, Map<Variable, Double> exogenousVariables)
             throws InvalidCausalModelException {
         Set<Variable> variables = equations.stream().map(Equation::getVariable).collect(Collectors.toSet());
         equations.forEach(e -> variables.addAll(e.getFormula().variables()));
-        variables.addAll(exogenousVariables);
+        variables.addAll(exogenousVariables.keySet());
 
         boolean existsDefinitionForEachVariable = equations.size() + exogenousVariables.size() == variables.size();
         boolean existsNoDuplicateEquationForEachVariable =
                 equations.size() == equations.stream().map(Equation::getVariable).collect(Collectors.toSet()).size();
         boolean existsCircularDependency = equations.parallelStream()
                 .anyMatch(e -> isVariableInEquation(e.getVariable(), e, equations));
-        boolean exogenousVariableCalledLikeDummy = exogenousVariables.parallelStream()
-                .anyMatch(e -> e.name().equals(SATProbabilisticCausalitySolver.DUMMY_VAR_NAME));
+        boolean exogenousVariableCalledLikeDummy = exogenousVariables.keySet().parallelStream()
+                .anyMatch(e -> e.name().equals(DUMMY_VAR_NAME));
 
         if (!(existsDefinitionForEachVariable && existsNoDuplicateEquationForEachVariable &&
                 !existsCircularDependency && !exogenousVariableCalledLikeDummy))
@@ -204,7 +173,7 @@ public class ProbabilisticCausalModel {
 
         // check for all other non-exogenous variables whether their corresponding equation contains the searched var
         for (Variable v : variables.stream()
-                .filter(v -> !this.exogenousVariables.contains(v) && !v.equals(variable))
+                .filter(v -> !this.exogenousVariables.keySet().contains(v) && !v.equals(variable))
                 .collect(Collectors.toSet())) {
             Equation eq = equations.stream().filter(e -> e.getVariable().equals(v)).findFirst().orElse(null);
             /*
@@ -229,7 +198,7 @@ public class ProbabilisticCausalModel {
         Graph graph = new SingleGraph(this.name != null ? this.name : "");
         // create all nodes
         this.variableEquationMap.values().forEach(e -> graph.addNode(e.getVariable().name()));
-        this.getExogenousVariables().forEach(e -> graph.addNode(e.name()));
+        this.getExogenousVariables().keySet().forEach(e -> graph.addNode(e.name()));
         // create edges
         for (Equation equation : this.variableEquationMap.values()) {
             String equationVariableName = equation.getVariable().name();
@@ -249,7 +218,7 @@ public class ProbabilisticCausalModel {
     private boolean isContextValid(Set<Literal> context) {
         // each and only each exogenous variable must be defined by context
         return context.size() == exogenousVariables.size() &&
-                exogenousVariables.containsAll(context.stream().map(Literal::variable).collect(Collectors.toSet()));
+                exogenousVariables.keySet().containsAll(context.stream().map(Literal::variable).collect(Collectors.toSet()));
     }
 
     /**
@@ -308,7 +277,7 @@ public class ProbabilisticCausalModel {
         // get sorted list of equations
         List<Equation> equationsSorted = sortedNodes.stream()
                 // filter nodes representing endogenous variables
-                .filter(n -> !this.getExogenousVariables().contains(f.variable(n.getId())))
+                .filter(n -> !this.getExogenousVariables().keySet().contains(f.variable(n.getId())))
                 // get corresponding equation
                 .map(n -> this.getVariableEquationMap().get(f.variable(n.getId())))
                 .collect(Collectors.toList());
@@ -319,7 +288,7 @@ public class ProbabilisticCausalModel {
         return name;
     }
 
-    public Set<Variable> getExogenousVariables() {
+    public Map<Variable, Double> getExogenousVariables() {
         return exogenousVariables;
     }
 
