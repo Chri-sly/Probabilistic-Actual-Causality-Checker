@@ -4,7 +4,6 @@ import de.tuda.aiml.util.DeterministicExampleProvider;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
 import de.tum.in.i4.hp2sat.causality.SolvingStrategy;
-import de.tum.in.i4.hp2sat.util.ExampleProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.logicng.formulas.Formula;

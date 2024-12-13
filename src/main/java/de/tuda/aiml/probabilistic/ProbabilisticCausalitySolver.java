@@ -12,11 +12,14 @@ import org.logicng.util.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Probabilistic version of the {@link de.tum.in.i4.hp2sat.causality.CausalitySolver} class
+ */
 public abstract class ProbabilisticCausalitySolver {
     /**
-     * Checks AC1, AC2 and AC3 given a causal model, a cause, a context and phi and a solving strategy.
+     * Checks PC1, PC2 and PC3 given a causal model, a cause, a context and phi and a solving strategy.
      *
-     * @param causalModel     the underlying causel model
+     * @param causalModel     the underlying causal model
      * @param context         the context
      * @param phi             the phi
      * @param cause           the cause
@@ -29,15 +32,15 @@ public abstract class ProbabilisticCausalitySolver {
             throws InvalidCausalModelException;
 
     /**
-     * Checks if AC1 fulfilled.
+     * Checks if PC1 is fulfilled.
      *
      * @param evaluation the original evaluation of variables
      * @param phi        the phi
-     * @param cause      the cause for which we check AC1
+     * @param cause      the cause for which we check PC1
      * @return a tuple where the first item indicates whether phi occurred and the second item whether the cause
      * occurred
      */
-    public static Pair<Boolean, Boolean> fulfillsAC1(Set<Literal> evaluation, Formula phi, Set<Literal> cause) {
+    public static Pair<Boolean, Boolean> fulfillsPC1(Set<Literal> evaluation, Formula phi, Set<Literal> cause) {
         boolean phiEvaluation = phi.evaluate(new Assignment(evaluation));
         return new Pair<>(phiEvaluation, evaluation.containsAll(cause));
     }
@@ -50,7 +53,7 @@ public abstract class ProbabilisticCausalitySolver {
      * @param causalModel the underlying causal model
      * @param context     the context
      * @param phi         the phi
-     * @return set of all causes, i.e. AC1-AC3 fulfilled, as set of results
+     * @return set of all causes, i.e. PC1-PC3 fulfilled, as set of results
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
     Set<ProbabilisticCausalitySolverResult> getAllCauses(ProbabilisticCausalModel causalModel, Set<Literal> context, Formula phi,
@@ -102,7 +105,7 @@ public abstract class ProbabilisticCausalitySolver {
              * solution that is true or false given that the provided causal model is valid. Once we obtained the
              * evaluation, we extend the assignment accordingly */
             Formula evaluation = equation.getFormula().restrict(assignment);
-            // if the causal model is valid than one of the ifs MUST apply!
+            // if the causal model is valid then one of the ifs MUST apply!
             if (evaluation instanceof CTrue) {
                 assignment.addLiteral(equation.getVariable());
             } else {
@@ -125,7 +128,7 @@ public abstract class ProbabilisticCausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    protected ProbabilisticCausalModel createModifiedCausalModelForCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
+    protected static ProbabilisticCausalModel createModifiedCausalModelForCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
             throws InvalidCausalModelException {
         return createModifiedCausalModel(causalModel, cause, f);
     }
@@ -140,7 +143,7 @@ public abstract class ProbabilisticCausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    ProbabilisticCausalModel createModifiedCausalModelForNegatedCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
+    protected static ProbabilisticCausalModel createModifiedCausalModelForNegatedCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
             throws InvalidCausalModelException {
         return createModifiedCausalModel(causalModel, cause.stream().map(Literal::negate)
                 .collect(Collectors.toSet()), f);
@@ -220,7 +223,7 @@ public abstract class ProbabilisticCausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    private ProbabilisticCausalModel createModifiedCausalModel(ProbabilisticCausalModel causalModel, Set<Literal> literals, FormulaFactory f)
+    private static ProbabilisticCausalModel createModifiedCausalModel(ProbabilisticCausalModel causalModel, Set<Literal> literals, FormulaFactory f)
             throws InvalidCausalModelException {
         ProbabilisticCausalModel causalModelModified = new ProbabilisticCausalModel(causalModel,
                 literals.stream().map(Literal::variable).collect(Collectors.toSet()));

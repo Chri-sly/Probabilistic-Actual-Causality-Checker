@@ -169,10 +169,17 @@ public class ProbabilisticExampleProvider {
      * Probabilistic version of the voting example. Here five Voters either vote for Suzy or Billy.
      * The one with the majority of votes wins the election. Example taken from: Jingzhi Fang, On probabilistic actual causation, pp: 33
      *
+     * V1 = 1: Voter 1 votes for Suzy; V1 = 0: Voter 1 votes vor Billy
+     * V2 = 1: Voter 2 votes for Suzy; V2 = 0: Voter 2 votes vor Billy
+     * V3 = 1: Voter 3 votes for Suzy; V3 = 0: Voter 3 votes vor Billy
+     * V4 = 1: Voter 4 votes for Suzy; V4 = 0: Voter 4 votes vor Billy
+     * V5 = 1: Voter 5 votes for Suzy; V5 = 0: Voter 5 votes vor Billy
+     * SW = 1: Suzy wins the election; SW = 0: Suzy loses the election, thus, Billy wins
+     *
      * @return Probabilistic Causal Model of the Voting example
      * @throws InvalidCausalModelException
      */
-    public static ProbabilisticCausalModel voting() throws InvalidCausalModelException{
+    public static ProbabilisticCausalModel voting() throws InvalidCausalModelException, ParserException {
         FormulaFactory f = new FormulaFactory();
         Variable U1Exo = f.variable("U1_exo");
         Variable U2Exo = f.variable("U2_exo");
@@ -192,15 +199,20 @@ public class ProbabilisticExampleProvider {
         Formula V3Formula = U3Exo;
         Formula V4Formula = U4Exo;
         Formula V5Formula = U5Exo;
-        //Formula SWFormula = true;
+
+        PropositionalParser p = new PropositionalParser(f);
+        Formula SWFormula = p.parse("(V1 & V2 & V3) | (V1 & V2 & V4) | (V1 & V2 & V5) | (V1 & V3 & V4) | (V1 & V3 & V5) | " +
+                "(V1 & V4 & V5) | (V2 & V3 & V4) | (V2 & V3 & V5) | (V3 & V4 & V5) | " +
+                "(V1 & V2 & V3 & V4) | (V1 & V2 & V3 & V5) | (V2 & V3 & V4 & V5) | (V1 & V2 & V3 & V4 & V5)");
 
         Equation V1Equation = new Equation(V1, V1Formula);
         Equation V2Equation = new Equation(V2, V2Formula);
         Equation V3Equation = new Equation(V3, V3Formula);
         Equation V4Equation = new Equation(V4, V4Formula);
         Equation V5Equation = new Equation(V5, V5Formula);
+        Equation SWEquation = new Equation(SW, SWFormula);
 
-        Set<Equation> equations = new HashSet<>(Arrays.asList(V1Equation, V2Equation, V3Equation, V4Equation, V5Equation));
+        Set<Equation> equations = new HashSet<>(Arrays.asList(V1Equation, V2Equation, V3Equation, V4Equation, V5Equation, SWEquation));
 
         Map<Variable, Double> exogenousVariables = new HashMap<>();
         exogenousVariables.put(U1Exo, 0.5);
@@ -224,7 +236,7 @@ public class ProbabilisticExampleProvider {
      * @return
      * @throws InvalidCausalModelException
      */
-    public static ProbabilisticCausalModel assassin() throws InvalidCausalModelException {
+    public static ProbabilisticCausalModel prob_assassin() throws InvalidCausalModelException, ParserException {
         FormulaFactory f = new FormulaFactory();
         Variable AExo = f.variable("A_exo");
         Variable BExo = f.variable("B_exo");
@@ -237,7 +249,9 @@ public class ProbabilisticExampleProvider {
 
         Formula AFormula = AExo;
         Formula BFormula = BExo;
-        Formula DFormula = f.or(f.or(f.and(f.and(A, f.not(B)), DeathByPoison), f.and(f.and(A, B), DeathElse)), f.and(f.and(f.not(A), B), DeathElse));
+
+        PropositionalParser p = new PropositionalParser(f);
+        Formula DFormula = p.parse("(A & ~B & DeathByPoison) | (A & B & DeathElse) | (~A & B & DeathElse) | (~A & ~B & DeathElse)");
 
         Equation PEquation = new Equation(A, AFormula);
         Equation AEquation = new Equation(B, BFormula);
@@ -398,12 +412,26 @@ public class ProbabilisticExampleProvider {
         return causalModel;
     }
 
+    /**
+     * Variant of the rock throwing example in which Suzy throwing the rock lowers the probability of the bottle shattering
+     * even though she actually hits the bottle.
+     * Example taken from: Hitchcock, Christopher, "Probabilistic Causation" (4.2 Problem cases)
+     *
+     * BT = 1: Billy throws his rock; BT = 0: Billy does not throw his rock
+     * ST = 1: Suzy throws her rock; ST = 0: Suzy does not throw her rock
+     * BH = 1: Billy hits the bottle; BH = 0: Billy does not hit the bottle
+     * SH = 1: Suzy hits the bottle; SH = 0: Suzy does not hit the bottle
+     * BS = 1: The bottle shatters; BS = 0: The bottle does not shatter
+     *
+     * @return Probabilistic Causal Model of a probability lowering variant of the rock-throwing example
+     * @throws InvalidCausalModelException
+     */
     public static ProbabilisticCausalModel prob_rock_throwing_cause_lowers_prob() throws InvalidCausalModelException {
         FormulaFactory f = new FormulaFactory();
         Variable BNFPxo = f.variable("BNotFollowsPlan_exo");
         Variable STExo = f.variable("ST_exo");
-        Variable SuzyHitsExo = f.variable("SuzyHits_exo");
-        Variable BillyHitsExo = f.variable("BillyHits_exo");
+        Variable SHExo = f.variable("SH_exo");
+        Variable BHExo = f.variable("BH_exo");
 
         Variable BT = f.variable("BT");
         Variable ST = f.variable("ST");
@@ -413,45 +441,62 @@ public class ProbabilisticExampleProvider {
 
         Formula BTFormula = f.or(f.and(f.not(STExo), f.not(BNFPxo)), f.and(STExo, BNFPxo));
         Formula STFormula = STExo;
-        Formula SHFormula = f.and(ST, SuzyHitsExo);
-        Formula BHFormula = f.and(f.and(BT, f.not(SH)), BillyHitsExo);
+        Formula SHFormula = f.and(ST, SHExo);
+        Formula BHFormula = f.and(f.and(BT, f.not(SH)), BHExo);
         Formula BSFormula = f.or(SH, BH);
 
-        de.tum.in.i4.hp2sat.causality.Equation BTEquation = new de.tum.in.i4.hp2sat.causality.Equation(BT, BTFormula);
-        de.tum.in.i4.hp2sat.causality.Equation STEquation = new de.tum.in.i4.hp2sat.causality.Equation(ST, STFormula);
-        de.tum.in.i4.hp2sat.causality.Equation SHEquation = new de.tum.in.i4.hp2sat.causality.Equation(SH, SHFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BHEquation = new de.tum.in.i4.hp2sat.causality.Equation(BH, BHFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BSEquation = new de.tum.in.i4.hp2sat.causality.Equation(BS, BSFormula);
+        Equation BTEquation = new Equation(BT, BTFormula);
+        Equation STEquation = new Equation(ST, STFormula);
+        Equation SHEquation = new Equation(SH, SHFormula);
+        Equation BHEquation = new Equation(BH, BHFormula);
+        Equation BSEquation = new Equation(BS, BSFormula);
 
         Set<de.tum.in.i4.hp2sat.causality.Equation> equations = new HashSet<>(Arrays.asList(BTEquation, STEquation, SHEquation, BHEquation,
                 BSEquation));
         Map<Variable, Double> exogenousVariables = new HashMap<>();
         exogenousVariables.put(BNFPxo, 0.1);
         exogenousVariables.put(STExo, 0.9);
-        exogenousVariables.put(SuzyHitsExo, 0.5);
-        exogenousVariables.put(BillyHitsExo, 0.9);
+        exogenousVariables.put(SHExo, 0.5);
+        exogenousVariables.put(BHExo, 0.9);
 
-        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Suzy lowers prob", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Rock throwing, cause lowers probability", equations, exogenousVariables, f);
         return causalModel;
     }
 
+    /**
+     * The barometer example in which a man reads off from a barometer (which might have a defect) and then it starts
+     * to rain.
+     * Example taken from: Hitchcock, Christopher, "Probabilistic Causation" (1.1 Problems for Regularity Theories)
+     *
+     * AP = 1: The air pressure drops; AP = 0: The air pressure does not drop
+     * BD = 1: The barometer shows a low value; BD = 0: The barometer shows a high value
+     * RS = 1: Rain starts to fall; RS = 0: Rain does not fall
+     *
+     * @return
+     * @throws InvalidCausalModelException
+     */
     public static ProbabilisticCausalModel barometer() throws InvalidCausalModelException{
         FormulaFactory f = new FormulaFactory();
-        Variable AirPressureExo = f.variable("AP_exo");
+        Variable APExo = f.variable("AP_exo");
+        Variable BWExo = f.variable("BW_exo");
 
-        Variable BarometerDrop = f.variable("BD");
-        Variable RainStarts = f.variable("RS");
+        Variable AP = f.variable("AP");
+        Variable BD = f.variable("BD");
+        Variable RS = f.variable("RS");
 
-        Formula BDFormula = AirPressureExo;
-        Formula RSFormula = AirPressureExo;
+        Formula APFormula = APExo;
+        Formula BDFormula = f.and(AP, BWExo);
+        Formula RSFormula = AP;
 
-        Equation BDEquation = new Equation(BarometerDrop, BDFormula);
-        Equation RSEquaitons = new Equation(RainStarts, RSFormula);
+        Equation APEquation = new Equation(AP, APFormula);
+        Equation BDEquation = new Equation(BD, BDFormula);
+        Equation RSEquation = new Equation(RS, RSFormula);
 
-        Set<Equation> equations = new HashSet<>(Arrays.asList(BDEquation, RSEquaitons));
+        Set<Equation> equations = new HashSet<>(Arrays.asList(APEquation, BDEquation, RSEquation));
 
         Map<Variable, Double> exogenousVariables = new HashMap<>();
-        exogenousVariables.put(AirPressureExo, 0.5);
+        exogenousVariables.put(APExo, 0.5);
+        exogenousVariables.put(BWExo, 0.9);
 
         ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Barometer", equations, exogenousVariables, f);
         return causalModel;

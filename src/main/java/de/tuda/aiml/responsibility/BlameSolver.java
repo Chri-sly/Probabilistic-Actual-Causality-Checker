@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Implementation of computing the Blame defined by Halpern and Chockler.
+ */
 public class BlameSolver {
     private Formula phi;
     private Set<Literal> cause;

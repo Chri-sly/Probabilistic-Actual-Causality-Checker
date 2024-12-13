@@ -1,5 +1,6 @@
 package de.tuda.aiml.deterministic;
 
+import de.tuda.aiml.util.UtilityMethods;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalitySolver;
 import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
@@ -112,7 +113,7 @@ public class OriginalHPSolver extends CausalitySolver {
                     }
                     List<Set<Literal>> allSubsetsOfWAssignments = (new Util<Literal>()).generatePowerSet(wAssignments);
                     for(Set<Literal> wAssignment : allSubsetsOfWAssignments){
-                        if(wAssignment.size() != w.size()){
+                        if(wAssignment.size() != w.size() || !UtilityMethods.noDuplicates(wAssignment)){
                             continue;
                         }
                         // create a modified causal of the model in which we previously set X = x', by intervening

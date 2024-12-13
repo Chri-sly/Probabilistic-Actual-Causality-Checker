@@ -8,16 +8,16 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ProbabilisticCausalitySolverResult {
-    private boolean ac1;
-    private boolean ac2;
-    private boolean ac3;
+    private boolean pc1;
+    private boolean pc2;
+    private boolean pc3;
     private Set<Literal> cause;
     private Set<Literal> w;
 
-    public ProbabilisticCausalitySolverResult(boolean ac1, boolean ac2, boolean ac3, Set<Literal> cause, Set<Literal> w) {
-        this.ac1 = ac1;
-        this.ac2 = ac2;
-        this.ac3 = ac3;
+    public ProbabilisticCausalitySolverResult(boolean pc1, boolean pc2, boolean pc3, Set<Literal> cause, Set<Literal> w) {
+        this.pc1 = pc1;
+        this.pc2 = pc2;
+        this.pc3 = pc3;
         this.cause = cause;
         this.w = w;
     }
@@ -30,7 +30,7 @@ public class ProbabilisticCausalitySolverResult {
     public Map<Literal, Double> getResponsibility() {
         Map<Literal, Double> responsibility = new HashMap<>();
 
-        if (this.ac1 && this.ac2 && this.ac3) {
+        if (this.pc1 && this.pc2 && this.pc3) {
             int w = this.w == null ? 0 : this.w.size();
             int x = cause.size();
             this.cause.forEach(l -> responsibility.put(l, 1D / (x + w)));
@@ -44,9 +44,9 @@ public class ProbabilisticCausalitySolverResult {
     @Override
     public String toString() {
         return "CausalitySolverResult{" +
-                "ac1=" + ac1 +
-                ", ac2=" + ac2 +
-                ", ac3=" + ac3 +
+                "pc1=" + pc1 +
+                ", pc2=" + pc2 +
+                ", pc3=" + pc3 +
                 ", cause=" + cause +
                 ", w=" + w +
                 '}';
@@ -57,9 +57,9 @@ public class ProbabilisticCausalitySolverResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ProbabilisticCausalitySolverResult that = (ProbabilisticCausalitySolverResult) o;
-        return ac1 == that.ac1 &&
-                ac2 == that.ac2 &&
-                ac3 == that.ac3 &&
+        return pc1 == that.pc1 &&
+                pc2 == that.pc2 &&
+                pc3 == that.pc3 &&
                 Objects.equals(cause, that.cause) &&
                 Objects.equals(w, that.w);
     }
@@ -67,19 +67,19 @@ public class ProbabilisticCausalitySolverResult {
     @Override
     public int hashCode() {
 
-        return Objects.hash(ac1, ac2, ac3, cause, w);
+        return Objects.hash(pc1, pc2, pc3, cause, w);
     }
 
     public boolean isAc1() {
-        return ac1;
+        return pc1;
     }
 
     public boolean isAc2() {
-        return ac2;
+        return pc2;
     }
 
     public boolean isAc3() {
-        return ac3;
+        return pc3;
     }
 
     public Set<Literal> getCause() {

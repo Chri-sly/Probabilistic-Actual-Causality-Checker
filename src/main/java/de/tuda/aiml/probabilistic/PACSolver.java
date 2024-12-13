@@ -1,0 +1,165 @@
+package de.tuda.aiml.probabilistic;
+
+import de.tuda.aiml.util.UtilityMethods;
+import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
+import de.tum.in.i4.hp2sat.util.Util;
+import org.eclipse.collections.impl.set.mutable.UnifiedSet;
+import org.logicng.formulas.Formula;
+import org.logicng.formulas.FormulaFactory;
+import org.logicng.formulas.Literal;
+import org.logicng.formulas.Variable;
+import org.logicng.util.Pair;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Implementation of the PAC definition
+ */
+public class PACSolver extends ProbabilisticCausalitySolver{
+    /**
+     * Overrides {@link ProbabilisticCausalitySolver#solve(ProbabilisticCausalModel, Set, Formula, Set, ProbabilisticSolvingStrategy)}.
+     *
+     * @param causalModel     the underlying causal model
+     * @param context         the context
+     * @param phi             the phi
+     * @param cause           the cause
+     * @param solvingStrategy the applied solving strategy
+     * @return for each PC, true if fulfilled, false else
+     * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
+     */
+    public ProbabilisticCausalitySolverResult solve(ProbabilisticCausalModel causalModel, Set<Literal> context, Formula phi,
+                                                    Set<Literal> cause, ProbabilisticSolvingStrategy solvingStrategy)
+            throws InvalidCausalModelException {
+        FormulaFactory f = causalModel.getFormulaFactory();
+        Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModel, context);
+        Pair<Boolean, Boolean> pc1Tuple = fulfillsPC1(evaluation, phi, cause);
+        boolean pc1 = pc1Tuple.first() && pc1Tuple.second();
+        Set<Literal> w = fulfillsPC2(causalModel, phi, cause, context, evaluation, f);
+        boolean pc2 = w != null;
+        boolean pc3 = fulfillsPC3(causalModel, phi, cause, context, evaluation, pc1Tuple.first(), f);
+        ProbabilisticCausalitySolverResult causalitySolverResult = new ProbabilisticCausalitySolverResult(pc1, pc2, pc3, cause, w);
+        return causalitySolverResult;
+    }
+
+    /**
+     * Checks if PC2 is fulfilled.
+     *
+     * @param causalModel     the underlying causal model
+     * @param phi             the phi
+     * @param cause           the cause for which we check PC2
+     * @param context         the context
+     * @param evaluation      the original evaluation of variables
+     * @param f               a formula factory
+     * @return returns W if PC2 fulfilled, else null
+     * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
+     */
+    private Set<Literal> fulfillsPC2(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
+                                     Set<Literal> evaluation, FormulaFactory f)
+            throws InvalidCausalModelException {
+
+        // all exogenous variables
+        Map<Variable, Double> exogenousVariables = causalModel.getExogenousVariables();
+
+        for(Literal lit: evaluation){
+            System.out.println(lit);
+        }
+
+        Set<Literal> evaluationEndogenousVars = evaluation.stream()
+                .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable())).collect(Collectors.toSet());
+
+        // create copy of original causal model
+        ProbabilisticCausalModel causalModelForNegatedCause = createModifiedCausalModelForNegatedCause(causalModel, cause, f);
+
+        // get the cause as set of variables
+        Set<Variable> causeVariables = cause.stream().map(Literal::variable).collect(Collectors.toSet());
+
+        /*
+         * remove exogenous variables from evaluation as they are not needed for computing the Ws. Furthermore,
+         * all variables in the cause also must not be in W. */
+        Set<Literal> wVariables = evaluation.stream()
+                .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable()) &&
+                        !(causeVariables.contains(l.variable())))
+                .collect(Collectors.toSet());
+
+        // get all possible Ws, i.e. create power set of the evaluation
+        List<Set<Literal>> allW = (new Util<Literal>()).generatePowerSet(wVariables);
+
+        Set<Literal> exogenousAssignments = new HashSet<>();
+        exogenousAssignments.addAll(exogenousVariables.keySet());
+        for(Literal literal: exogenousVariables.keySet()){
+            exogenousAssignments.add(literal.negate());
+        }
+        List<Set<Literal>> allSubsetsOfExoAssignments = (new Util<Literal>()).generatePowerSet(exogenousAssignments);
+
+        // Iterate over all W
+        for (Set<Literal> w : allW) {
+            ProbabilisticCausalModel causalModelModifiedW = createModifiedCausalModelForW(causalModelForNegatedCause, w, f);
+
+            double probCAndE = 0.0;
+            double probC = 0.0;
+            for (Set<Literal> exoAssignment : allSubsetsOfExoAssignments) {
+                if (exoAssignment.size() != exogenousVariables.size() || !UtilityMethods.noDuplicates(exoAssignment)) {
+                    continue;
+                }
+                if(ProbabilisticCausalitySolver.evaluateEquations(causalModel, exoAssignment).containsAll(evaluationEndogenousVars)){
+                    Set<Literal> negatedEvaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModelModifiedW, exoAssignment);
+                    Pair<Boolean, Boolean> ac1TupleNegated = ProbabilisticCausalitySolver.fulfillsPC1(negatedEvaluation, phi, cause.stream().map(Literal::negate)
+                            .collect(Collectors.toSet()));
+                    double negatedModelProbability = causalModelModifiedW.getProbability(exoAssignment);
+                    System.out.println("Exo:" + exoAssignment);
+
+                    if(ac1TupleNegated.second()) {
+                        probC += negatedModelProbability;
+                    }
+                    if(ac1TupleNegated.first() && ac1TupleNegated.second()){
+                        probCAndE += negatedModelProbability;
+                    }
+                }
+            }
+            double probCause = (probCAndE / probC);
+            System.out.println(probC);
+            System.out.println(probCAndE);
+            System.out.println(probCause);
+            if(probCause < 1){
+                return w;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks if PAC3 is fulfilled
+     *
+     * @param causalModel     the underlying causal model
+     * @param phi             the phi
+     * @param cause           the cause for which we check PC2
+     * @param context         the context
+     * @param evaluation      the original evaluation of variables
+     * @param f               a formula factory
+     * @return true if A3 fulfilled, else false
+     */
+    private boolean fulfillsPC3(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
+                                Set<Literal> evaluation, boolean phiOccurred, FormulaFactory f) throws InvalidCausalModelException {
+        if (cause.size() > 1 && phiOccurred) {
+
+            // get all subsets of cause
+            Set<Set<Literal>> allSubsetsOfCause = new UnifiedSet<>(cause).powerSet().stream()
+                    .map(s -> s.toImmutable().castToSet())
+                    .filter(s -> s.size() > 0 && s.size() < cause.size()) // remove empty set and full cause
+                    .collect(Collectors.toSet());
+            /*
+             * no sub-cause must fulfill AC1 and AC2
+             * for AC1, we only need to check if the current cause subset, as we checked for phi before */
+            for (Set<Literal> c : allSubsetsOfCause) {
+                if (evaluation.containsAll(c) &&
+                        fulfillsPC2(causalModel, phi, c, context, evaluation, f) != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+

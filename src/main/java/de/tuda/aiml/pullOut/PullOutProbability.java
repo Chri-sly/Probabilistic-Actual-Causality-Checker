@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Implementation of the "Pull Out the Probability" approach that Halpern suggests, to introduce uncertainty in causal models
+ */
 public class PullOutProbability {
     private CausalModel model;
     private List<Set<Literal>> contexts;

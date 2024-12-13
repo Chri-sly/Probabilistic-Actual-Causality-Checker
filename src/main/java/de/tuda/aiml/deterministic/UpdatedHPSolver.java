@@ -1,5 +1,6 @@
 package de.tuda.aiml.deterministic;
 
+import de.tuda.aiml.util.UtilityMethods;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalitySolver;
 import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
@@ -111,7 +112,7 @@ public class UpdatedHPSolver extends CausalitySolver {
                     }
                     List<Set<Literal>> allSubsetsOfWAssignments = (new Util<Literal>()).generatePowerSet(wAssignments);
                     for(Set<Literal> wAssignment : allSubsetsOfWAssignments){
-                        if(wAssignment.size() != w.size()){
+                        if(wAssignment.size() != w.size() || !UtilityMethods.noDuplicates(wAssignment)){
                             continue;
                         }
                         // create a modified causal of the model in which we previously set X = x', by intervening
@@ -168,6 +169,11 @@ public class UpdatedHPSolver extends CausalitySolver {
         return null;
     }
 
+    /**
+     * Method to check if the third clause of the updated HP definition is fulfilled.
+     * @return true if AC3 fulfilled, else false
+     * @throws InvalidCausalModelException
+     */
     private boolean fulfillsAC3(CausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
                                 Set<Literal> evaluation, boolean phiOccurred, FormulaFactory f)
             throws InvalidCausalModelException {

@@ -23,8 +23,13 @@ import java.util.stream.Collectors;
 
 import static de.tuda.aiml.probabilistic.ProbabilisticSolvingStrategy.*;
 
+/**
+ * Class to create Probabilistic causal models. This class is the probabilistic variant of the
+ * {@link de.tum.in.i4.hp2sat.causality.CausalModel} class.
+ */
 public class ProbabilisticCausalModel {
     private String name;
+    // Exogenous variables are mapped to a probability
     private Map<Variable, Double> exogenousVariables;
 
     private Map<Variable, Equation> variableEquationMap;
@@ -36,9 +41,9 @@ public class ProbabilisticCausalModel {
     static final String DUMMY_VAR_NAME = "_dummy";
 
     /**
-     * Creates a new causal model
+     * Creates a new probabilistic causal model
      *
-     * @param name               name of the causal model
+     * @param name               name of the probabilistic causal model
      * @param equations          equations for the endogenous variables of the causal model
      * @param exogenousVariables the exogenous variables of the causal model
      * @param formulaFactory     a formula factory
@@ -55,12 +60,6 @@ public class ProbabilisticCausalModel {
     /**
      * Same as {@link ProbabilisticCausalModel#ProbabilisticCausalModel(String, Set, Map, FormulaFactory)}, but allows
      * specifying if validity is checked. For internal use only.
-     *
-     * @param name
-     * @param equations
-     * @param exogenousVariables
-     * @param checkValidity
-     * @throws InvalidCausalModelException
      */
     private ProbabilisticCausalModel(String name, Set<Equation> equations, Map<Variable, Double> exogenousVariables,
                                      FormulaFactory formulaFactory, boolean checkValidity) throws InvalidCausalModelException {
@@ -89,10 +88,27 @@ public class ProbabilisticCausalModel {
     ProbabilisticCausalModel(ProbabilisticCausalModel causalModel, Set<Variable> variables) throws InvalidCausalModelException {
         /*
          * we assume that this constructor is called only, if we know that the original causal model is valid.
-         * Thereforce, we skip the validity check. */
+         * Therefore, we skip the validity check. */
         this(causalModel.name, causalModel.variableEquationMap.values().stream()
                 .map(e -> variables.contains(e.getVariable()) ? new Equation(e) : e)
                 .collect(Collectors.toSet()), causalModel.exogenousVariables, causalModel.formulaFactory, false);
+    }
+
+    /**
+     * Get the probability of the given context in this probabilistic causal model.
+     * @param context the uncertain context
+     * @return the probability of the given context
+     */
+    public double getProbability(Set<Literal> context){
+        double result = 1.0;
+        for(Literal literal : context){
+            if(exogenousVariables.get(literal) == null){
+                result *= 1 - exogenousVariables.get(literal.negate());
+            } else {
+                result *= exogenousVariables.get(literal);
+            }
+        }
+        return result;
     }
 
     /**
