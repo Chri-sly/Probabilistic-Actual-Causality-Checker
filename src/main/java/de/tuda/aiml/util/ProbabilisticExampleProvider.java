@@ -6,10 +6,10 @@ import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 
 import org.logicng.formulas.*;
 import org.logicng.formulas.Formula;
-
-import de.tuda.aiml.probabilistic.ProbabilisticCausalModel;
 import org.logicng.io.parsers.ParserException;
 import org.logicng.io.parsers.PropositionalParser;
+
+import de.tuda.aiml.probabilistic.ProbabilisticCausalModel;
 
 import java.util.*;
 
@@ -265,6 +265,56 @@ public class ProbabilisticExampleProvider {
         exogenousVariables.put(DeathElse, 0.1);
 
         ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Assassin", equations, exogenousVariables, f);
+        return causalModel;
+    }
+
+    /**
+     * Overlapping example of atoms U-238 and Ra-226 that possibly decay into another atom. U-238 could decay into Th-234 and an alpha particle
+     * and Ra-226 could decay into Rn-222 and an alpha particle. Thus, both atoms U-238 and Ra-226 overlap on the possibility to produce an alpha particle.
+     * Example taken from: Jingzhi Fang, On probabilistic actual causation, pp: 39-40
+     *
+     * A = 1: U-238 appears in the box; A = 0: U-238 does not appear in the box
+     * B = 1: Ra-226 appears in the box; B = 0: Ra-226 does not appear in the box
+     * C = 1: Th-234 appears in the box; C = 0: Th-234 does not appear in the box
+     * D = 1: Rn-222 appears in the box; D = 0: Rn-222 does not appear in the box
+     * E = 1: Alpha particle appears in the box; E = 0: Alpha particle does not appear in the box
+     *
+     * @return
+     * @throws InvalidCausalModelException
+     */
+    public static ProbabilisticCausalModel prob_overlapping() throws InvalidCausalModelException {
+        FormulaFactory f = new FormulaFactory();
+        Variable U1 = f.variable("U1");
+        Variable U2 = f.variable("U2");
+        Variable U3 = f.variable("U3");
+        Variable U4 = f.variable("U4");
+
+        Variable A = f.variable("A");
+        Variable B = f.variable("B");
+        Variable C = f.variable("C");
+        Variable D = f.variable("D");
+        Variable E = f.variable("E");
+
+        Formula AFormula = U1;
+        Formula BFormula = U2;
+        Formula CFormula = f.and(A, U3);
+        Formula DFormula = f.and(B, U4);
+        Formula EFormula = f.or(f.and(A, U3), f.and(B, U4));
+
+        Equation AEquation = new Equation(A, AFormula);
+        Equation BEquation = new Equation(B, BFormula);
+        Equation CEquation = new Equation(C, CFormula);
+        Equation DEquation = new Equation(D, DFormula);
+        Equation EEquation = new Equation(E, EFormula);
+
+        Set<Equation> equations = new HashSet<>(Arrays.asList(AEquation, BEquation, CEquation, DEquation, EEquation));
+        Map<Variable, Double> exogenousVariables = new HashMap<>();
+        exogenousVariables.put(U1, 0.5);
+        exogenousVariables.put(U2, 0.5);
+        exogenousVariables.put(U3, 0.8);
+        exogenousVariables.put(U4, 0.7);
+
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Overlapping", equations, exogenousVariables, f);
         return causalModel;
     }
 

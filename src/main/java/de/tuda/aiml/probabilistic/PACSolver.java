@@ -20,12 +20,12 @@ public class PACSolver extends ProbabilisticCausalitySolver{
     /**
      * Overrides {@link ProbabilisticCausalitySolver#solve(ProbabilisticCausalModel, Set, Formula, Set, ProbabilisticSolvingStrategy)}.
      *
-     * @param causalModel     the underlying causal model
+     * @param causalModel     the underlying probabilistic causal model
      * @param context         the context
      * @param phi             the phi
      * @param cause           the cause
      * @param solvingStrategy the applied solving strategy
-     * @return for each PC, true if fulfilled, false else
+     * @return for each PAC, true if fulfilled, false else
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
     public ProbabilisticCausalitySolverResult solve(ProbabilisticCausalModel causalModel, Set<Literal> context, Formula phi,
@@ -34,27 +34,27 @@ public class PACSolver extends ProbabilisticCausalitySolver{
         FormulaFactory f = causalModel.getFormulaFactory();
         Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModel, context);
         Pair<Boolean, Boolean> pc1Tuple = fulfillsPC1(evaluation, phi, cause);
-        boolean pc1 = pc1Tuple.first() && pc1Tuple.second();
-        Set<Literal> w = fulfillsPC2(causalModel, phi, cause, context, evaluation, f);
-        boolean pc2 = w != null;
-        boolean pc3 = fulfillsPC3(causalModel, phi, cause, context, evaluation, pc1Tuple.first(), f);
-        ProbabilisticCausalitySolverResult causalitySolverResult = new ProbabilisticCausalitySolverResult(pc1, pc2, pc3, cause, w);
+        boolean pac1 = pc1Tuple.first() && pc1Tuple.second();
+        Set<Literal> w = fulfillsPAC2(causalModel, phi, cause, context, evaluation, f);
+        boolean pac2 = w != null;
+        boolean pac3 = fulfillsPAC3(causalModel, phi, cause, context, evaluation, pc1Tuple.first(), f);
+        ProbabilisticCausalitySolverResult causalitySolverResult = new ProbabilisticCausalitySolverResult(pac1, pac2, pac3, cause, w);
         return causalitySolverResult;
     }
 
     /**
-     * Checks if PC2 is fulfilled.
+     * Checks if PAC2 is fulfilled.
      *
      * @param causalModel     the underlying causal model
      * @param phi             the phi
-     * @param cause           the cause for which we check PC2
+     * @param cause           the cause for which we check PAC2
      * @param context         the context
      * @param evaluation      the original evaluation of variables
      * @param f               a formula factory
-     * @return returns W if PC2 fulfilled, else null
+     * @return the W that fulfills PAC2, else null
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    private Set<Literal> fulfillsPC2(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
+    private Set<Literal> fulfillsPAC2(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
                                      Set<Literal> evaluation, FormulaFactory f)
             throws InvalidCausalModelException {
 
@@ -132,15 +132,15 @@ public class PACSolver extends ProbabilisticCausalitySolver{
     /**
      * Checks if PAC3 is fulfilled
      *
-     * @param causalModel     the underlying causal model
+     * @param causalModel     the underlying probabilistic causal model
      * @param phi             the phi
-     * @param cause           the cause for which we check PC2
+     * @param cause           the cause for which we check PAC2
      * @param context         the context
      * @param evaluation      the original evaluation of variables
      * @param f               a formula factory
-     * @return true if A3 fulfilled, else false
+     * @return true if PAC3 fulfilled, else false
      */
-    private boolean fulfillsPC3(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
+    private boolean fulfillsPAC3(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
                                 Set<Literal> evaluation, boolean phiOccurred, FormulaFactory f) throws InvalidCausalModelException {
         if (cause.size() > 1 && phiOccurred) {
 
@@ -150,11 +150,11 @@ public class PACSolver extends ProbabilisticCausalitySolver{
                     .filter(s -> s.size() > 0 && s.size() < cause.size()) // remove empty set and full cause
                     .collect(Collectors.toSet());
             /*
-             * no sub-cause must fulfill AC1 and AC2
-             * for AC1, we only need to check if the current cause subset, as we checked for phi before */
+             * no sub-cause must fulfill PAC1 and PAC2
+             * for PAC1, we only need to check if the current cause subset, as we checked for phi before */
             for (Set<Literal> c : allSubsetsOfCause) {
                 if (evaluation.containsAll(c) &&
-                        fulfillsPC2(causalModel, phi, c, context, evaluation, f) != null) {
+                        fulfillsPAC2(causalModel, phi, c, context, evaluation, f) != null) {
                     return false;
                 }
             }

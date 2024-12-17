@@ -7,6 +7,7 @@ import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCauseException;
 import de.tum.in.i4.hp2sat.exceptions.InvalidContextException;
 import de.tum.in.i4.hp2sat.exceptions.InvalidPhiException;
+
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.Literal;
 import org.logicng.formulas.Variable;
@@ -16,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implementation of the "Pull Out the Probability" approach that Halpern suggests, to introduce uncertainty in causal models
+ * Implementation of the "Pull Out the Probability" approach
  */
 public class PullOutProbability {
     private CausalModel model;

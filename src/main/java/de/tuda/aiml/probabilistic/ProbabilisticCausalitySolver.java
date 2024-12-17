@@ -13,13 +13,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Probabilistic version of the {@link de.tum.in.i4.hp2sat.causality.CausalitySolver} class
+ * Probabilistic version of the {@link de.tum.in.i4.hp2sat.causality.CausalitySolver} class.
+ * Abstract class that the solvers for the different definitions extend.
  */
 public abstract class ProbabilisticCausalitySolver {
     /**
-     * Checks PC1, PC2 and PC3 given a causal model, a cause, a context and phi and a solving strategy.
+     * Checks Clause 1, Clause 2 and Clause 3 given a causal model, a cause, a context and phi and a solving strategy.
      *
-     * @param causalModel     the underlying causal model
+     * @param causalModel     the underlying probabilistic causal model
      * @param context         the context
      * @param phi             the phi
      * @param cause           the cause
@@ -32,11 +33,11 @@ public abstract class ProbabilisticCausalitySolver {
             throws InvalidCausalModelException;
 
     /**
-     * Checks if PC1 is fulfilled.
+     * Checks if Clause 1 is fulfilled.
      *
      * @param evaluation the original evaluation of variables
      * @param phi        the phi
-     * @param cause      the cause for which we check PC1
+     * @param cause      the cause for which we check Clause 1
      * @return a tuple where the first item indicates whether phi occurred and the second item whether the cause
      * occurred
      */
@@ -53,7 +54,7 @@ public abstract class ProbabilisticCausalitySolver {
      * @param causalModel the underlying causal model
      * @param context     the context
      * @param phi         the phi
-     * @return set of all causes, i.e. PC1-PC3 fulfilled, as set of results
+     * @return set of all causes, i.e. Clause 1 - Clause 3 fulfilled, as set of results
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
     Set<ProbabilisticCausalitySolverResult> getAllCauses(ProbabilisticCausalModel causalModel, Set<Literal> context, Formula phi,
@@ -73,7 +74,7 @@ public abstract class ProbabilisticCausalitySolver {
         for (Set<Literal> cause : allPotentialCauses) {
             /*
              * if a subset of the currently analyzed potential cause is already a cause, we don't need to check the
-             * current one since it will not fulfill AC3 (minimality!) */
+             * current one since it will not fulfill Clause 3 (minimality!) */
             if (allCauses.stream().noneMatch(c -> cause.containsAll(c.getCause()))) {
                 ProbabilisticCausalitySolverResult causalitySolverResult = solve(causalModel, context, phi, cause, solvingStrategy);
                 if (causalitySolverResult.isAc1() && causalitySolverResult.isAc2() && causalitySolverResult.isAc3()) {

@@ -20,7 +20,7 @@ class PCSolver extends ProbabilisticCausalitySolver {
     /**
      * Overrides {@link ProbabilisticCausalitySolver#solve(ProbabilisticCausalModel, Set, Formula, Set, ProbabilisticSolvingStrategy)}.
      *
-     * @param causalModel     the underlying causal model
+     * @param causalModel     the underlying probabilistic causal model
      * @param context         the context
      * @param phi             the phi
      * @param cause           the cause
@@ -234,7 +234,7 @@ class PCSolver extends ProbabilisticCausalitySolver {
      * @param context         the context
      * @param evaluation      the original evaluation of variables
      * @param f               a formula factory
-     * @return true if A3 fulfilled, else false
+     * @return true if PC3 fulfilled, else false
      */
     private boolean fulfillsPC3(ProbabilisticCausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
                                 Set<Literal> evaluation, boolean phiOccurred, FormulaFactory f) throws InvalidCausalModelException {

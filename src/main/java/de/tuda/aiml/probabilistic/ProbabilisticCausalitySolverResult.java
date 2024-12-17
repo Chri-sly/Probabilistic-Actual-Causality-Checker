@@ -7,6 +7,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Probabilistic version of the {@link de.tum.in.i4.hp2sat.causality.CausalitySolverResult} class.
+ * Represents the result of probabilistic solvers that extend the HP definition.
+ */
 public class ProbabilisticCausalitySolverResult {
     private boolean pc1;
     private boolean pc2;

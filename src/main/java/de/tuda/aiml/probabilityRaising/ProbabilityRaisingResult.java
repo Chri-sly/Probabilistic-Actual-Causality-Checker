@@ -4,8 +4,6 @@ import java.util.Objects;
 
 /**
  * Class that contains the result of a probability raising approach.
- * In detail, it contains information if C is regarded a cause of E, the probability of P(E | C)
- * and the probability of P(E | not(C))
  */
 public class ProbabilityRaisingResult {
     boolean probRaised;

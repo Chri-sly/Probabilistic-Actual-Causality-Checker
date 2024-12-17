@@ -2,6 +2,7 @@ package de.tuda.aiml.probabilityRaising;
 
 import de.tuda.aiml.probabilistic.ProbabilisticCausalModel;
 import de.tuda.aiml.probabilistic.ProbabilisticCausalitySolver;
+import de.tuda.aiml.util.UtilityMethods;
 import de.tum.in.i4.hp2sat.util.Util;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
@@ -103,7 +104,7 @@ public class ProbabilityRaising {
         }
         List<Set<Literal>> allSubsetsOfExoAssignments = (new Util<Literal>()).generatePowerSet(exogenousAssignments);
         for(Set<Literal> exoAssignment : allSubsetsOfExoAssignments) {
-            if (exoAssignment.size() != exogenousVariables.size() || !exoAssignment.containsAll(context) || !noDuplicates(exoAssignment)) {
+            if (exoAssignment.size() != exogenousVariables.size() || !exoAssignment.containsAll(context) || !UtilityMethods.noDuplicates(exoAssignment)) {
                 continue;
             }
             System.out.println(exoAssignment);
@@ -130,16 +131,5 @@ public class ProbabilityRaising {
         System.out.println("P(E|not C): " + (probNotCAndE / probNotC));
 
         return new ProbabilityRaisingResult((probCAndE / probC) > (probNotCAndE / probNotC), (probCAndE / probC), (probNotCAndE / probNotC));
-    }
-
-    private static boolean noDuplicates(Set<Literal> context){
-        boolean flag = true;
-        for(Literal literal : context){
-            if(context.contains(literal.negate())){
-                flag = false;
-                break;
-            }
-        }
-        return flag;
     }
 }

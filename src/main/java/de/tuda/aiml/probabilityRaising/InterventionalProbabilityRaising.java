@@ -4,11 +4,11 @@ import de.tuda.aiml.probabilistic.ProbabilisticCausalModel;
 import de.tuda.aiml.probabilistic.ProbabilisticCausalitySolver;
 import de.tuda.aiml.probabilistic.ProbabilisticCausalitySolverResult;
 import de.tuda.aiml.probabilistic.ProbabilisticSolvingStrategy;
+import de.tuda.aiml.util.UtilityMethods;
+
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
-import de.tum.in.i4.hp2sat.exceptions.InvalidCauseException;
-import de.tum.in.i4.hp2sat.exceptions.InvalidContextException;
-import de.tum.in.i4.hp2sat.exceptions.InvalidPhiException;
 import de.tum.in.i4.hp2sat.util.Util;
+
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
 import org.logicng.formulas.Literal;
@@ -28,7 +28,7 @@ public class InterventionalProbabilityRaising extends ProbabilisticCausalitySolv
         return null;
     }
 
-    public static ProbabilityRaisingResult computeActual(ProbabilisticCausalModel model, Formula phi, Set<Literal> cause, Set<Literal> context) throws InvalidContextException, InvalidCauseException, InvalidCausalModelException, InvalidPhiException {
+    public static ProbabilityRaisingResult computeActual(ProbabilisticCausalModel model, Formula phi, Set<Literal> cause, Set<Literal> context) throws InvalidCausalModelException {
         FormulaFactory f = model.getFormulaFactory();
         double probCAndE = 0.0;
         double probC = 0.0;
@@ -43,7 +43,7 @@ public class InterventionalProbabilityRaising extends ProbabilisticCausalitySolv
         }
         List<Set<Literal>> allSubsetsOfExoAssignments = (new Util<Literal>()).generatePowerSet(exogenousAssignments);
         for(Set<Literal> exoAssignment : allSubsetsOfExoAssignments) {
-            if (exoAssignment.size() != exogenousVariables.size() || !exoAssignment.containsAll(context) || !noDuplicates(exoAssignment)) {
+            if (exoAssignment.size() != exogenousVariables.size() || !exoAssignment.containsAll(context) || !UtilityMethods.noDuplicates(exoAssignment)) {
                 continue;
             }
             System.out.println(exoAssignment);
@@ -81,16 +81,5 @@ public class InterventionalProbabilityRaising extends ProbabilisticCausalitySolv
         System.out.println("P(E|not C): " + (probNotCAndE / probNotC));
 
         return new ProbabilityRaisingResult((probCAndE / probC) > (probNotCAndE / probNotC), (probCAndE / probC), (probNotCAndE / probNotC));
-    }
-
-    private static boolean noDuplicates(Set<Literal> context){
-        boolean flag = true;
-        for(Literal literal : context){
-            if(context.contains(literal.negate())){
-                flag = false;
-                break;
-            }
-        }
-        return flag;
     }
 }

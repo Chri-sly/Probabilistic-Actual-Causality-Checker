@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class ProbabilisticCausalitySolverInstanceTest {
+public class PCSolverInstanceTest {
 
     PCSolver pcSolver;
 
@@ -40,7 +40,7 @@ public class ProbabilisticCausalitySolverInstanceTest {
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,
                         new HashSet<>(Arrays.asList(f.literal("B", false))));
 
-        ProbabilisticCausalitySolverResult result = pcSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.BRUTE_FORCE);
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -62,7 +62,7 @@ public class ProbabilisticCausalitySolverInstanceTest {
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
                 new ProbabilisticCausalitySolverResult(true, false, true, cause, null);
 
-        ProbabilisticCausalitySolverResult result = pcSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.BRUTE_FORCE);
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -84,7 +84,7 @@ public class ProbabilisticCausalitySolverInstanceTest {
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
 
-        ProbabilisticCausalitySolverResult result = pcSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.BRUTE_FORCE);
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -105,7 +105,7 @@ public class ProbabilisticCausalitySolverInstanceTest {
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
 
-        ProbabilisticCausalitySolverResult result = pcSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.BRUTE_FORCE);
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -128,7 +128,7 @@ public class ProbabilisticCausalitySolverInstanceTest {
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
 
-        ProbabilisticCausalitySolverResult result = pcSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.BRUTE_FORCE);
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -150,7 +150,30 @@ public class ProbabilisticCausalitySolverInstanceTest {
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
 
-        ProbabilisticCausalitySolverResult result = pcSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.BRUTE_FORCE);
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    @Test
+    public void Ra226_cause_of_alpha_particle() throws Exception {
+        ProbabilisticCausalModel Voting = ProbabilisticExampleProvider.prob_overlapping();
+        FormulaFactory f = Voting.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("U1", true), f.literal("U2", true), f.literal("U3", true),
+                f.literal("U4", false)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("B"));
+
+        Formula phi = f.variable("E");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList(f.literal("A", true),
+                        f.literal("C", true), f.literal("D", false))));
+
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }

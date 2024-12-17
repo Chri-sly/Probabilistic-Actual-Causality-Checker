@@ -131,11 +131,14 @@ public class ProbabilisticCausalModel {
             throws InvalidContextException, InvalidCauseException, InvalidPhiException, InvalidCausalModelException {
         validateCausalityCheck(context, phi, cause);
         ProbabilisticCausalitySolver causalitySolver = null;
-        if (solvingStrategy == BRUTE_FORCE ) {
+        if (solvingStrategy == PC ) {
             causalitySolver = new PCSolver();
         }
-        else if(solvingStrategy == PROBABILITY_RAISING){
-            //causalitySolver = new ProbabilityRaising();
+        else if(solvingStrategy == PAC) {
+            causalitySolver = new PACSolver();
+        }
+        else if(solvingStrategy == PCPrime) {
+            causalitySolver = new PCPrimeSolver();
         }
 
         return causalitySolver.solve(this, context, phi, cause, solvingStrategy);
