@@ -17,7 +17,7 @@ public class PACSolverInstanceTest {
     PACSolver pacSolver;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         pacSolver = new PACSolver();
     }
 
@@ -150,6 +150,28 @@ public class PACSolverInstanceTest {
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
 
         ProbabilisticCausalitySolverResult result = pacSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    @Test
+    public void Ra226_cause_of_alpha_particle() throws Exception {
+        ProbabilisticCausalModel Voting = ProbabilisticExampleProvider.prob_overlapping();
+        FormulaFactory f = Voting.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("U1", true), f.literal("U2", true), f.literal("U3", true),
+                f.literal("U4", false)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("B"));
+
+        Formula phi = f.variable("E");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, false, true, cause,  null);
+
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }

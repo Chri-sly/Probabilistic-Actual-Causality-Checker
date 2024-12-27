@@ -50,19 +50,14 @@ public class UpdatedHPSolver extends CausalitySolver {
     private Set<Literal> fulfillsAC2(CausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
                                      Set<Literal> evaluation, FormulaFactory f) throws InvalidCausalModelException {
 
+        System.out.println("Cause: " + cause);
         // firstly, check the trivial case of empty W. Therefore, negate phi.
         Formula phiFormula = f.not(phi);
 
         // create modified causal model by replacing the cause x with x'.
-        CausalModel causalModelModified = createModifiedCausalModelForCause(causalModel, cause, f);
+        CausalModel causalModelForNegatedCause = createModifiedCausalModelForCause(causalModel, cause, f);
 
-        // evaluate causal model with setting x' for cause
-        Set<Literal> evaluationModified = CausalitySolver.evaluateEquations(causalModelModified, context);
-
-        // check if not(phi) evaluates to true for empty W -> if yes, no further investigation necessary. AC2 is fulfilled.
-        if (phiFormula.evaluate(new Assignment(evaluationModified))) {
-            return new HashSet<>();
-        }
+        CausalModel causalModelForCause = createModifiedCausalModelForW(causalModel, cause , f);
 
         // get the cause as set of variables
         Set<Variable> causeVariables = cause.stream().map(Literal::variable).collect(Collectors.toSet());
@@ -77,90 +72,72 @@ public class UpdatedHPSolver extends CausalitySolver {
         // get all possible Ws, i.e. create power set of the evaluation
         List<Set<Literal>> allSubsetsOfW = (new Util<Literal>()).generatePowerSet(wVariables);
 
-        // Remove all exogenous variables for Z
-        Set<Literal> zVariables = evaluation.stream()
-                .filter(l -> !causalModel.getExogenousVariables().contains(l.variable()))
-                .collect(Collectors.toSet());
-
-        List<Set<Literal>> allSubsetsOfZ = (new Util<Literal>()).generatePowerSet(zVariables);
-
-        for (Iterator<Set<Literal>> i = allSubsetsOfZ.iterator(); i.hasNext();) {
-            Set<Literal> element = i.next();
-            if (!element.containsAll(cause)) {
-                i.remove();
-            }
-        }
-
         // Iterate over all W and Z
         for (Set<Literal> w : allSubsetsOfW) {
-            for(Set<Literal> z : allSubsetsOfZ){
+            // Create Z distinct to W
+            Set<Literal> zVariables = evaluation.stream().filter(l -> !causalModel.getExogenousVariables().contains(l.variable())).collect(Collectors.toSet());
+            zVariables.removeAll(w);
 
-                // Copy W to intersect with Z
-                Set<Literal> intersection = new HashSet<Literal>(w);
-                intersection.retainAll(z);
-
-                // // W and Z have to be disjoint
-                if(!intersection.isEmpty()){
+            // Set of all possible assignments to the Ws
+            Set<Literal> wAssignments = new HashSet<>();
+            wAssignments.addAll(w);
+            for(Literal lit: w){
+                wAssignments.add(lit.negate());
+            }
+            System.out.println("W: " + w);
+            List<Set<Literal>> allSubsetsOfWAssignments = (new Util<Literal>()).generatePowerSet(wAssignments);
+            for(Set<Literal> wAssignment : allSubsetsOfWAssignments){
+                if(wAssignment.size() != w.size() || !UtilityMethods.noDuplicates(wAssignment)){
                     continue;
                 }
-                else{
-                    // Set of all possible assignments to the Ws
-                    Set<Literal> wAssignments = new HashSet<>();
-                    wAssignments.addAll(w);
-                    for(Literal lit: w){
-                        wAssignments.add(lit.negate());
+                System.out.println(wAssignment);
+                // create a modified causal of the model in which we previously set X = x', by intervening
+                // on the values of the current variables in W using wAssignment
+                CausalModel causalModelForNegatedCauseModifiedW = createModifiedCausalModelForW(causalModelForNegatedCause, wAssignment, f);
+
+                // evaluate all values of variables in this causal model
+                Set<Literal> evaluationModified = CausalitySolver.evaluateEquations(causalModelForNegatedCauseModifiedW, context);
+
+                // Check AC2 (a): Not Phi should hold in model that has X = x' and W = w
+                if (phiFormula.evaluate(new Assignment(evaluationModified))) {
+                    System.out.println("Ac2(a) fulfilled");
+                    // Create Z' as Z - X
+                    zVariables.removeAll(cause);
+                    System.out.println("Z: " + zVariables);
+                    List<Set<Literal>> allSubsetsOfZPrime = (new Util<Literal>()).generatePowerSet(zVariables);
+
+                    // The difference to the original variant: check all subsets of W
+                    boolean checkWSubsets = true;
+                    List<Set<Literal>> wSubsets = (new Util<Literal>()).generatePowerSet(wAssignment);
+
+                    // Check for each subset W' of W if the AC2(b) condition is fulfilled
+                    for(Set<Literal> wSubset : wSubsets){
+
+                        // create causal model with the current subset W' = w' and X = x
+                        CausalModel causalModelModW = createModifiedCausalModelForW(causalModelForCause, wSubset, f);
+
+                        for(Set<Literal> zStar : allSubsetsOfZPrime){
+
+                            // create causal model with X = x, W' = w' and Z' = z*
+                            CausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModW, zStar, f);
+                            evaluationModified = CausalitySolver.evaluateEquations(causalModelModWModZStar, context);
+
+                            // Check AC2 (b): Phi fulfilled in model that has X = x, W' = w', Z' = z*
+                            if(!phi.evaluate(new Assignment(evaluationModified))){
+                                System.out.println(evaluationModified);
+                                System.out.println("Not fulfilled for: " + zStar + "  " + wSubset);
+                                checkWSubsets = false;
+                                break;
+                            }
+                        }
+                        // found a subset of W that does not fulfill the condition
+                        if(checkWSubsets == false){
+                            break;
+                        }
                     }
-                    List<Set<Literal>> allSubsetsOfWAssignments = (new Util<Literal>()).generatePowerSet(wAssignments);
-                    for(Set<Literal> wAssignment : allSubsetsOfWAssignments){
-                        if(wAssignment.size() != w.size() || !UtilityMethods.noDuplicates(wAssignment)){
-                            continue;
-                        }
-                        // create a modified causal of the model in which we previously set X = x', by intervening
-                        // on the values of the current variables in W using wAssignment
-                        CausalModel causalModelModifiedW = createModifiedCausalModelForW(causalModelModified, wAssignment, f);
-
-                        // evaluate all values of variables in this causal model
-                        evaluationModified = CausalitySolver.evaluateEquations(causalModelModifiedW, context);
-
-                        // Check AC2 (a): Not Phi should hold in model that has X = x' and W = w
-                        if (phiFormula.evaluate(new Assignment(evaluationModified))) {
-
-                            // Create Z' as Z - X
-                            Set<Literal> zPrimeVariables = new HashSet<>();
-                            zPrimeVariables.addAll(z);
-                            zPrimeVariables.removeAll(cause);
-                            List<Set<Literal>> allSubsetsOfZPrime = (new Util<Literal>()).generatePowerSet(zPrimeVariables);
-
-                            // The difference to the original variant: check all subsets of W
-                            boolean checkWSubsets = true;
-                            List<Set<Literal>> wSubsets = (new Util<Literal>()).generatePowerSet(wAssignment);
-
-                            // Check for each subset W' of W if the AC2(b) condition is fulfilled
-                            for(Set<Literal> wSubset : wSubsets){
-
-                                // create causal model with the current subset W' = w' and X = x
-                                CausalModel causalModelModW = createModifiedCausalModelForW(causalModel, wSubset, f);
-
-                                for(Set<Literal> zStar : allSubsetsOfZPrime){
-
-                                    //create causal model with X = x, W' = w' and Z' = z*
-                                    CausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModW, zStar, f);
-                                    evaluationModified = CausalitySolver.evaluateEquations(causalModelModWModZStar, context);
-
-                                    // Check AC2 (b): Phi fulfilled in model that has X = x, W' = w', Z' = z*
-                                    if(!phi.evaluate(new Assignment(evaluationModified))){
-                                        checkWSubsets = false;
-                                        break;
-                                    }
-                                }
-                                if(checkWSubsets == false){
-                                    break;
-                                }
-                            }
-                            if(checkWSubsets){
-                                return w;
-                            }
-                        }
+                    // all subsets of W fulfill the condition
+                    if(checkWSubsets){
+                        return wAssignment;
                     }
                 }
             }

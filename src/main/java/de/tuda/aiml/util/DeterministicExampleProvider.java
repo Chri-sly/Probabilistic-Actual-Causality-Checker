@@ -1,5 +1,6 @@
 package de.tuda.aiml.util;
 
+import de.tuda.aiml.probabilistic.ProbabilisticCausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.Equation;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
@@ -7,10 +8,10 @@ import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
 import org.logicng.formulas.Variable;
+import org.logicng.io.parsers.ParserException;
+import org.logicng.io.parsers.PropositionalParser;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Additional examples for the HP definitions. Most of the popular examples, like the rock-throwing or the forest fire,
@@ -140,6 +141,94 @@ public class DeterministicExampleProvider {
         Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(M1Exo, M2Exo, M3Exo));
 
         CausalModel causalModel = new CausalModel("firingSquad", equations, exogenousVariables, f);
+        return causalModel;
+    }
+
+    /**
+     * The majority voting example. Here five Voters either vote for Suzy or Billy.
+     * The one with the majority of votes wins the election. Example taken from: Jingzhi Fang, On probabilistic actual causation, pp: 33
+     *
+     * V1 = 1: Voter 1 votes for Suzy; V1 = 0: Voter 1 votes vor Billy
+     * V2 = 1: Voter 2 votes for Suzy; V2 = 0: Voter 2 votes vor Billy
+     * V3 = 1: Voter 3 votes for Suzy; V3 = 0: Voter 3 votes vor Billy
+     * V4 = 1: Voter 4 votes for Suzy; V4 = 0: Voter 4 votes vor Billy
+     * V5 = 1: Voter 5 votes for Suzy; V5 = 0: Voter 5 votes vor Billy
+     * SW = 1: Suzy wins the election; SW = 0: Suzy loses the election, thus, Billy wins
+     *
+     * @return Probabilistic Causal Model of the Voting example
+     * @throws InvalidCausalModelException
+     */
+    public static CausalModel voting() throws InvalidCausalModelException, ParserException {
+        FormulaFactory f = new FormulaFactory();
+        Variable U1Exo = f.variable("U1_exo");
+        Variable U2Exo = f.variable("U2_exo");
+        Variable U3Exo = f.variable("U3_exo");
+        Variable U4Exo = f.variable("U4_exo");
+        Variable U5Exo = f.variable("U5_exo");
+
+        Variable V1 = f.variable("V1");
+        Variable V2 = f.variable("V2");
+        Variable V3 = f.variable("V3");
+        Variable V4 = f.variable("V4");
+        Variable V5 = f.variable("V5");
+        Variable SW = f.variable("SW");
+
+        Formula V1Formula = U1Exo;
+        Formula V2Formula = U2Exo;
+        Formula V3Formula = U3Exo;
+        Formula V4Formula = U4Exo;
+        Formula V5Formula = U5Exo;
+
+        PropositionalParser p = new PropositionalParser(f);
+        Formula SWFormula = p.parse("(V1 & V2 & V3) | (V1 & V2 & V4) | (V1 & V2 & V5) | (V1 & V3 & V4) | (V1 & V3 & V5) | " +
+                "(V1 & V4 & V5) | (V2 & V3 & V4) | (V2 & V3 & V5) | (V3 & V4 & V5) | " +
+                "(V1 & V2 & V3 & V4) | (V1 & V2 & V3 & V5) | (V2 & V3 & V4 & V5) | (V1 & V2 & V3 & V4 & V5)");
+
+        Equation V1Equation = new Equation(V1, V1Formula);
+        Equation V2Equation = new Equation(V2, V2Formula);
+        Equation V3Equation = new Equation(V3, V3Formula);
+        Equation V4Equation = new Equation(V4, V4Formula);
+        Equation V5Equation = new Equation(V5, V5Formula);
+        Equation SWEquation = new Equation(SW, SWFormula);
+
+        Set<Equation> equations = new HashSet<>(Arrays.asList(V1Equation, V2Equation, V3Equation, V4Equation, V5Equation, SWEquation));
+
+        Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(U1Exo, U2Exo, U3Exo, U4Exo, U5Exo));
+
+        CausalModel causalModel = new CausalModel("Voting", equations, exogenousVariables, f);
+        return causalModel;
+    }
+
+    public static CausalModel opticalVoting() throws InvalidCausalModelException {
+        FormulaFactory f = new FormulaFactory();
+        Variable AExo = f.variable("A_exo");
+
+        Variable B = f.variable("B");
+        Variable A = f.variable("A");
+        Variable C = f.variable("C");
+        Variable D = f.variable("D");
+        Variable DPrime = f.variable("DPrime");
+        Variable WIN = f.variable("WIN");
+
+        Formula AFormula = AExo;
+        Formula BFormula = A;
+        Formula CFormula = A;
+        Formula DFormula = f.and(B, C);
+        Formula DPrimeFormula = f.and(B, f.not(A));
+        Formula WINFormula = f.or(f.or(A, D), DPrime);
+
+        Equation AEquation = new Equation(A, AFormula);
+        Equation BEquation = new Equation(B, BFormula);
+        Equation CEquation = new Equation(C, CFormula);
+        Equation DEquation = new Equation(D, DFormula);
+        Equation DPrimeEquation = new Equation(DPrime, DPrimeFormula);
+        Equation WINEquation = new Equation(WIN, WINFormula);
+
+        Set<Equation> equations = new HashSet<>(Arrays.asList(AEquation, BEquation, CEquation, DEquation, DPrimeEquation,
+                WINEquation));
+        Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(AExo));
+
+        CausalModel causalModel = new CausalModel("optical Voting", equations, exogenousVariables, f);
         return causalModel;
     }
 }

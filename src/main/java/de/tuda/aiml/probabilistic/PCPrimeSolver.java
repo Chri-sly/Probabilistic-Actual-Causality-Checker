@@ -61,10 +61,6 @@ public class PCPrimeSolver extends ProbabilisticCausalitySolver {
         // all exogenous variables
         Map<Variable, Double> exogenousVariables = causalModel.getExogenousVariables();
 
-        for(Literal lit: evaluation){
-            System.out.println(lit);
-        }
-
         Set<Literal> evaluationEndogenousVars = evaluation.stream()
                 .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable())).collect(Collectors.toSet());
 
@@ -86,20 +82,6 @@ public class PCPrimeSolver extends ProbabilisticCausalitySolver {
         // get all possible Ws, i.e. create power set of the evaluation
         List<Set<Literal>> allW = (new Util<Literal>()).generatePowerSet(wVariables);
 
-        // Remove all exogenous variables for Z
-        Set<Literal> zVariables = evaluation.stream()
-                .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable()))
-                .collect(Collectors.toSet());
-
-        List<Set<Literal>> allSubsetsOfZ = (new Util<Literal>()).generatePowerSet(zVariables);
-
-        for (Iterator<Set<Literal>> i = allSubsetsOfZ.iterator(); i.hasNext();) {
-            Set<Literal> element = i.next();
-            if (!element.containsAll(cause)) {
-                i.remove();
-            }
-        }
-
         Set<Literal> exogenousAssignments = new HashSet<>();
         exogenousAssignments.addAll(exogenousVariables.keySet());
         for(Literal literal: exogenousVariables.keySet()){
@@ -109,95 +91,83 @@ public class PCPrimeSolver extends ProbabilisticCausalitySolver {
 
         // Iterate over all W and Z
         for (Set<Literal> w : allW) {
-            for(Set<Literal> z : allSubsetsOfZ){
-                Set<Literal> intersection = new HashSet<Literal>(w);
-                intersection.retainAll(z);
-                // make sure W and Z are disjoint
-                if(!intersection.isEmpty() || z.size() + w.size() < causalModel.getEquationsSorted().size()){
+            Set<Literal> zVariables = evaluation.stream().filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable())).collect(Collectors.toSet());
+            zVariables.removeAll(w);
+
+            // Set of all possible assignments to the Ws
+            Set<Literal> wAssignments = new HashSet<>();
+            wAssignments.addAll(w);
+            for(Literal lit: w){
+                wAssignments.add(lit.negate());
+            }
+            List<Set<Literal>> allSubsetsOfWAssignments = (new Util<Literal>()).generatePowerSet(wAssignments);
+            for(Set<Literal> wAssignment : allSubsetsOfWAssignments){
+                if(wAssignment.size() != w.size()  || !UtilityMethods.noDuplicates(wAssignment)){
                     continue;
                 }
-                else{
-                    // Set of all possible assignments to the Ws
-                    Set<Literal> wAssignments = new HashSet<>();
-                    wAssignments.addAll(w);
-                    for(Literal lit: w){
-                        wAssignments.add(lit.negate());
-                    }
-                    List<Set<Literal>> allSubsetsOfWAssignments = (new Util<Literal>()).generatePowerSet(wAssignments);
-                    for(Set<Literal> wAssignment : allSubsetsOfWAssignments){
-                        if(wAssignment.size() != w.size()  || !UtilityMethods.noDuplicates(wAssignment)){
+                ProbabilisticCausalModel causalModelModifiedW = createModifiedCausalModelForW(causalModelForCause, wAssignment, f);
+                ProbabilisticCausalModel causalModelNegatedModifiedW = createModifiedCausalModelForW(causalModelForNegatedCause, wAssignment, f);
+
+                double probCAndE = 0.0;
+                double probC = 0.0;
+                double probNotCAndE = 0.0;
+                double probNotC = 0.0;
+                boolean zFulfills = true;
+                double probCause = 0.0;
+                double notCause = 0.0;
+                List<Double> probList = new ArrayList<>();
+
+                zVariables.removeAll(cause);
+                List<Set<Literal>> allSubsetsOfZPrime = (new Util<Literal>()).generatePowerSet(zVariables);
+                for(Set<Literal> zStar : allSubsetsOfZPrime) {
+                    ProbabilisticCausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModifiedW, zStar, f);
+                    for(Set<Literal> exoAssignment : allSubsetsOfExoAssignments) {
+                        if (exoAssignment.size() != exogenousVariables.size() || !UtilityMethods.noDuplicates(exoAssignment)) {
                             continue;
                         }
-                        ProbabilisticCausalModel causalModelModifiedW = createModifiedCausalModelForW(causalModelForCause, wAssignment, f);
-                        ProbabilisticCausalModel causalModelNegatedModifiedW = createModifiedCausalModelForW(causalModelForNegatedCause, wAssignment, f);
+                        if (ProbabilisticCausalitySolver.evaluateEquations(causalModel, exoAssignment).containsAll(evaluationEndogenousVars)) {
+                            // evaluate all variables
+                            Set<Literal> evaluationModified = ProbabilisticCausalitySolver.evaluateEquations(causalModelModWModZStar, exoAssignment);
+                            Pair<Boolean, Boolean> ac1Tuple = ProbabilisticCausalitySolver.fulfillsPC1(evaluationModified, phi, cause);
+                            double modelProbability = causalModelModWModZStar.getProbability(exoAssignment);
 
-                        double probCAndE = 0.0;
-                        double probC = 0.0;
-                        double probNotCAndE = 0.0;
-                        double probNotC = 0.0;
-                        boolean zFulfills = true;
-                        double probCause = 0.0;
-                        double notCause = 0.0;
-                        List<Double> probList = new ArrayList<>();
-                        Set<Literal> zPrimeVariables = new HashSet<>();
-                        zPrimeVariables.addAll(z);
-                        zPrimeVariables.removeAll(cause);
-                        List<Set<Literal>> allSubsetsOfZPrime = (new Util<Literal>()).generatePowerSet(zPrimeVariables);
-                        for(Set<Literal> zStar : allSubsetsOfZPrime) {
-                            ProbabilisticCausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModifiedW, zStar, f);
-                            for(Set<Literal> exoAssignment : allSubsetsOfExoAssignments) {
-                                if (exoAssignment.size() != exogenousVariables.size() || !UtilityMethods.noDuplicates(exoAssignment)) {
-                                    continue;
-                                }
-                                if (ProbabilisticCausalitySolver.evaluateEquations(causalModel, exoAssignment).containsAll(evaluationEndogenousVars)) {
-                                    System.out.println("Exo:" + exoAssignment);
-                                    // evaluate all variables
-                                    Set<Literal> evaluationModified = ProbabilisticCausalitySolver.evaluateEquations(causalModelModWModZStar, exoAssignment);
-                                    Pair<Boolean, Boolean> ac1Tuple = ProbabilisticCausalitySolver.fulfillsPC1(evaluationModified, phi, cause);
-                                    double modelProbability = causalModelModWModZStar.getProbability(exoAssignment);
+                            Set<Literal> negatedEvaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModelNegatedModifiedW, exoAssignment);
+                            Pair<Boolean, Boolean> ac1TupleNegated = ProbabilisticCausalitySolver.fulfillsPC1(negatedEvaluation, phi, cause.stream().map(Literal::negate)
+                                    .collect(Collectors.toSet()));
+                            double negatedModelProbability = causalModelNegatedModifiedW.getProbability(exoAssignment);
 
-                                    Set<Literal> negatedEvaluation = ProbabilisticCausalitySolver.evaluateEquations(causalModelNegatedModifiedW, exoAssignment);
-                                    Pair<Boolean, Boolean> ac1TupleNegated = ProbabilisticCausalitySolver.fulfillsPC1(negatedEvaluation, phi, cause.stream().map(Literal::negate)
-                                            .collect(Collectors.toSet()));
-                                    double negatedModelProbability = causalModelNegatedModifiedW.getProbability(exoAssignment);
-
-                                    // cause fulfilled
-                                    if (ac1Tuple.second()) {
-                                        probC += modelProbability;
-                                    }
-                                    if (ac1TupleNegated.second()) {
-                                        probNotC += negatedModelProbability;
-                                    }
-                                    if (ac1Tuple.first() && ac1Tuple.second()) {
-                                        probCAndE += modelProbability;
-                                    }
-                                    if (ac1TupleNegated.first() && ac1TupleNegated.second()) {
-                                        probNotCAndE += negatedModelProbability;
-                                    }
-                                }
+                            // cause fulfilled
+                            if (ac1Tuple.second()) {
+                                probC += modelProbability;
                             }
-
-                            probCause = (probCAndE / probC);
-                            notCause = (probNotCAndE / probNotC);
-                            probList.add(probCause);
-                            if (probCause <= notCause) {
-                                zFulfills = false;
-                                break;
+                            if (ac1TupleNegated.second()) {
+                                probNotC += negatedModelProbability;
                             }
-                        }
-                        if(zFulfills){
-                            System.out.println("Prob 1. cond: " + probCause);
-                            System.out.println("W assignment " + wAssignment);
-                            System.out.println("Z: " + z);
-                            for(double prob: probList){
-                                System.out.println("Prob: " + prob);
+                            if (ac1Tuple.first() && ac1Tuple.second()) {
+                                probCAndE += modelProbability;
                             }
-                            System.out.println("P(not(C)): " + notCause);
-                            System.out.println("fulfill PC2 (a)");
-                            System.out.println("---------");
-                            return wAssignment;
+                            if (ac1TupleNegated.first() && ac1TupleNegated.second()) {
+                                probNotCAndE += negatedModelProbability;
+                            }
                         }
                     }
+
+                    probCause = (probCAndE / probC);
+                    notCause = (probNotCAndE / probNotC);
+                    probList.add(probCause);
+                    if (probCause <= notCause) {
+                        zFulfills = false;
+                        break;
+                    }
+                }
+                if(zFulfills){
+                    System.out.println("Prob 1. cond: " + probCause);
+                    System.out.println("W assignment " + wAssignment);
+                    System.out.println("Z: " + zVariables);
+                    System.out.println("P(not(C)): " + notCause);
+                    System.out.println("fulfill PC2 (a)");
+                    System.out.println("---------");
+                    return wAssignment;
                 }
             }
         }

@@ -28,7 +28,7 @@ public class PCSolverInstanceTest {
         FormulaFactory f = Don_Corleone.getFormulaFactory();
         Set<Literal> context = new HashSet<>(Arrays.asList(
                 f.literal("CI_exo", true), f.literal("BI_exo", true), f.literal("SonnyShoots", true),
-                f.literal("TurkShoots", false), f.literal("SonnyHits", true), f.literal("TurkHits", false)
+                f.literal("SonnyHits", true)
         ));
 
         Set<Literal> cause = new HashSet<>();

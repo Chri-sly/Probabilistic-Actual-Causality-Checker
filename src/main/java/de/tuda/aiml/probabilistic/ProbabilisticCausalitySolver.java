@@ -129,7 +129,7 @@ public abstract class ProbabilisticCausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    protected static ProbabilisticCausalModel createModifiedCausalModelForCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
+    public static ProbabilisticCausalModel createModifiedCausalModelForCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
             throws InvalidCausalModelException {
         return createModifiedCausalModel(causalModel, cause, f);
     }
@@ -144,7 +144,7 @@ public abstract class ProbabilisticCausalitySolver {
      * @return the modified causal model
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
-    protected static ProbabilisticCausalModel createModifiedCausalModelForNegatedCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
+    public static ProbabilisticCausalModel createModifiedCausalModelForNegatedCause(ProbabilisticCausalModel causalModel, Set<Literal> cause, FormulaFactory f)
             throws InvalidCausalModelException {
         return createModifiedCausalModel(causalModel, cause.stream().map(Literal::negate)
                 .collect(Collectors.toSet()), f);

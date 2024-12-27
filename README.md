@@ -1,23 +1,31 @@
-# Academic Citation 
-Please cite the following paper when using this tool. 
-
-Ibrahim, A., Rehwald, S., Pretschner, A.: Efficiently checking actual causality with sat solving. In: Dependable Software Systems Engineering (2019), https://arxiv.org/abs/1904.13101
-
-@incollection{ibrahim2019,
-	author={Ibrahim, Amjad and Rehwald, Simon and Pretschner, Alexander},
-	title     = {Efficiently Checking Actual Causality with SAT Solving},
-	booktitle = {Dependable Software Systems Engineering},
-	year      = {2019},
-	url ={https://arxiv.org/abs/1904.13101},
-}
-# hp2sat
-
- [![Build Status](https://travis-ci.com/amjadKhalifah/HP2SAT1.0.svg?branch=master)](https://travis-ci.com/amjadKhalifah/HP2SAT1.0)
+# Actual Probabilistic Causality: Approaches and Implementation
+Bachelor thesis project by Christopher Schubert in computer science at Artificial Intelligence and Machine Learning Lab, 
+Technische Universität Darmstadt.
 
 ## Background
-This library allows to determine actual causality according to the modified Halpern-Pearl definition of causality [1]
-. The used examples in the unit test cases (specifically in [CausalitySolverInstanceTest](
-./src/test/java/de/tum/in/i4/hp2sat/causality/CausalitySolverInstanceTest.java)) are described [here](./doc/models.pdf).
+In my bachelor's thesis I looked at the different approaches towards extending actual causation
+for probabilistic scenarios and implemented them algorithmically. In the course of this, I went from the simple, conditional probability raising principle
+to causal modelling approaches employing interventions to create counterfactual scenarios. The leading work on actual causation
+in causal models is the Halpern-Pearl (HP) definition of actual causation [2]. However, they only present a definition in
+deterministic scenarios. Thus, I looked at probabilistic extensions of the Halpern-Pearl definition like 
+[Fenton-Glynn's definition of PC]().
+
+## Implementation
+To implement these approaches I chose to extend a previous work on actual causation, namely that of [Ibrahim et al.](https://arxiv.org/abs/1904.13101) [1].
+In their project, they provide an implementation to efficiently compute the modified variant of the HP definition https://github.com/amjadKhalifah/HP2SAT1.0.
+I extended their work to also handle probabilistic scenarios for actual causation and implemented the other two variants
+of the HP definition (Original and Updated). All of my work can be found in the ```main/java/de/tuda.aiml/``` folder and the
+tests in ```test/java/de/tuda.aiml/```.
+
+### Algorithms
+* Original HP definition
+* Updated HP definition
+* Simple Probability Raising
+* Interventional Probability Raising
+* Pull Out The Probability, Blame
+* PC
+* PC'
+* PAC
 
 ## Installation
 
@@ -26,119 +34,87 @@ Currently, this library is _not_ published in a Maven repository. Please build i
 ```bash
 $ mvn install
 ```
-Then, you can import it using Maven:
-```xml
-<dependency>
-    <groupId>de.tum.in.i4</groupId>
-    <artifactId>hp2sat</artifactId>
-    <version>1.0</version>
-</dependency>
-```
-
-Alternatively, a pre-built ```.jar``` is offered in the [release section](https://github.com/amjadKhalifah/HP2SAT1.0/releases) of this repository.
 
 ## Usage
 
 ### General
 
-#### Creation of a causal model
+#### Creation of a probabilistic causal model
 ```java
 // instantiate a new FormulaFactory
 FormulaFactory f = new FormulaFactory();
 
-// create exogenous variables; using _exo is not required, but used to distinguish them
-Variable BTExo = f.variable("BT_exo");
-Variable STExo = f.variable("ST_exo");
+// create exogenous variables
+Variable CIExo = f.variable("CI_exo");
+Variable BIExo = f.variable("BI_exo");
+Variable U1 = f.variable("SonnyShoots");
+Variable U2 = f.variable("TurkShoots");
+Variable U3 = f.variable("SonnyHits");
+Variable U4 = f.variable("TurkHits");
 
-// create endogenous variables; technically, there is no difference to exogenous ones
-Variable BT = f.variable("BT");
-Variable ST = f.variable("ST");
-Variable BH = f.variable("BH");
-Variable SH = f.variable("SH");
-Variable BS = f.variable("BS");
+// create endogenous variables that are at the center of the system/example
+Variable C = f.variable("C");
+Variable B = f.variable("B");
+Variable S = f.variable("S");
+Variable T = f.variable("T");
+Variable D = f.variable("D");
 
-// create the formula/function for each endogenous variable
-Formula BTFormula = BTExo;
-Formula STFormula = STExo;
-Formula SHFormula = ST;
-Formula BHFormula = f.and(BT, f.not(SH));
-Formula BSFormula = f.or(SH, BH);
+// create the formula/function for each endogenous variable. One can also use the PropositionalParser for complex Formulas.
+Formula CFormula = CIExo;
+Formula BFormula = BIExo;
+Formula SFormula = f.and(C, U1);
+Formula TFormula = f.and(f.and(B, f.not(S)), U2);
+Formula DFormula = f.or(f.and(S, U3), f.and(T, U4));
 
-// create the equations of the causal model: each endogenous variable and its formula form an equation
-Equation BTEquation = new Equation(BT, BTFormula);
-Equation STEquation = new Equation(ST, STFormula);
-Equation SHEquation = new Equation(SH, SHFormula);
-Equation BHEquation = new Equation(BH, BHFormula);
-Equation BSEquation = new Equation(BS, BSFormula);
+// create the structural equations of the causal model: each endogenous variable and its formula form an equation
+Equation CEquation = new Equation(C, CFormula);
+Equation BEquation = new Equation(B, BFormula);
+Equation SEquation = new Equation(S, SFormula);
+Equation TEquation = new Equation(T, TFormula);
+Equation DEquation = new Equation(D, DFormula);
 
-Set<Equation> equations = new HashSet<>(Arrays.asList(BTEquation, STEquation, SHEquation,
-    BHEquation, BSEquation));
-Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(BTExo, STExo));
+Set<Equation> equations = new HashSet<>(Arrays.asList(CEquation, BEquation, SEquation, TEquation, DEquation));
 
-// instantiate the CausalModel
-CausalModel causalModel = new CausalModel("RockThrowing", equations, exogenousVariables, f);
+// probability is introduced in the exogenous variables by mapping each exogenous variable to a double-value
+Map<Variable, Double> exogenousVariables = new HashMap<>();
+exogenousVariables.put(CIExo, 0.9);
+exogenousVariables.put(BIExo, 0.9);
+exogenousVariables.put(U1, 0.9);
+exogenousVariables.put(U2, 0.9);
+exogenousVariables.put(U3, 0.5);
+exogenousVariables.put(U4, 0.9);
+
+// instantiate the ProbabilisticCausalModel
+ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Don_Corleone", equations, exogenousVariables, f);
 ```
 
-#### Check whether *ST = 1* is a cause of *BS = 1* in the previously created causal model given *ST_exo, BT_exo = 1* as context
+#### Check whether *C = 1* is a cause of *D = 1* in the previously created probabilistic causal model given *CI_exo, BI_exo = 1* as context
 ```java
 // IMPORTANT: Use the same FormulaFactory instance as in the above!
 
 /*
- * Create positive literals for ST_exo and BT_exo. If ST_exo, BT_exo = 0, we would create negative ones,
- * e.g. f.literal("ST_exo", false). Using f.variable("ST_exo") would be a shortcut for f.literal("ST_exo", true)
+ * Create positive or negative literals for the exogenous variables whose value we know.
  */
-Set<Literal> context = new HashSet<>(Arrays.asList(f.literal("BT_exo", true),
-    f.literal("ST_exo", true)));
+Set<Literal> context = new HashSet<>(Arrays.asList(
+        f.literal("CI_exo", true), f.literal("BI_exo", true), f.literal("SonnyShoots", true), f.literal("SonnyHits", true)
+        ));
 
 /*
- * Similar as for the context, we specify f.literal("ST", true) as cause and f.variable("BS") as phi, as we 
- * want to express ST = 1 and BS = 1, respectively.
+ * Similar as for the context, we specify f.literal("C", true) as cause and f.variable("D") as phi, as we 
+ * want to express C = 1 and D = 1, respectively.
  */
-Set<Literal> cause = new HashSet<>(Collections.singletonList(f.literal("ST", true)));
-Formula phi = f.variable("BS");
+Set<Literal> cause = new HashSet<>((Collections.singletonList(f.literal("C", true)));
 
-// finally, call isCause on the causal model using the SAT-based algorithm
-CausalitySolverResult causalitySolverResult =
-    CauscausalModel.isCause(context, phi, cause, SolvingStrategy.SAT);
-```
+Formula phi = f.variable("D");Formula phi = f.variable("BS");
 
-#### Use other algorithms
-
-The ```SolvingStrategy``` enum contains all currently supported algorithms/strategies:
-```java
-public enum SolvingStrategy {
-     BRUTE_FORCE, SAT, SAT_MINIMAL, SAT_COMBINED, SAT_COMBINED_MINIMAL, 
-       SAT_OPTIMIZED_AC3,  SAT_OPTIMIZED_AC3_MINIMAL
-}
-```
-
-Just call the ```isCause```-method with the respective ```SolvingStrategy```:
-```java
-// Brute-Force
-CausalitySolverResult causalitySolverResult =
-    CauscausalModel.isCause(context, phi, cause, SolvingStrategy.BRUTE_FORCE);
-
-// SAT-based
-CausalitySolverResult causalitySolverResult =
-    CauscausalModel.isCause(context, phi, cause, SolvingStrategy.SAT);
-
-// SAT-based returning a minimal W for AC2
-CausalitySolverResult causalitySolverResult =
-    CauscausalModel.isCause(context, phi, cause, SolvingStrategy.SAT_MINIMAL);
-
-// SAT-based where checking AC2 and AC3 is combined
-CausalitySolverResult causalitySolverResult =
-    CauscausalModel.isCause(context, phi, cause, SolvingStrategy.SAT_COMBINED);
-
-// SAT-based where AC3 check does not require ALL-SAT
-CausalitySolverResult causalitySolverResult =
-    CauscausalModel.isCause(context, phi, cause, SolvingStrategy.SAT_OPTIMIZED_AC3);
+// check whether the cause with this phi fulfills all conditions of PC in this context
+ ProbabilisticCausalitySolverResult result = pcSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 ```
 
 ### Important Notes
 
 - When working with a causal model, *always* use the *same* `FormulaFactory` instance. If not, an exception might occur.
-- When creating a `CausalModel`, it is checked whether the latter is valid. It needs to fulfill the following 
+- When creating a `CausalModel` or a `ProbabilisticCausalModel`, it is checked whether the latter is valid. It needs to fulfill the following 
 characteristics; otherwise an exception is thrown:
     - Each variable needs to be either exogenous or defined by *exactly one* equation.
     - The causal model must be *acyclic*. That is, no variables are allowed to mutually depend on each other 
@@ -147,4 +123,6 @@ characteristics; otherwise an exception is thrown:
     
 ## Literature
 
-[1] J. Y. Halpern. "A Modification of the Halpern-Pearl Definition of Causality." In: Proceedings of the Twenty-Fourth International Joint Conference on Artificial Intelligence, IJCAI 2015, Buenos Aires, Argentina, July 25-31, 2015. 2015, pp. 3022–3033.
+[1] Ibrahim, A., Rehwald, S., Pretschner, A.: Efficiently checking actual causality with sat solving. In: Dependable Software Systems Engineering (2019), https://arxiv.org/abs/1904.13101
+
+[2] J. Y. Halpern. "A Modification of the Halpern-Pearl Definition of Causality." In: Proceedings of the Twenty-Fourth International Joint Conference on Artificial Intelligence, IJCAI 2015, Buenos Aires, Argentina, July 25-31, 2015. 2015, pp. 3022–3033.

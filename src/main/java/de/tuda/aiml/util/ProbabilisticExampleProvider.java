@@ -50,11 +50,11 @@ public class ProbabilisticExampleProvider {
         Formula BHFormula = f.and(f.and(BT, f.not(SH)), BHExo);
         Formula BSFormula = f.or(SH, BH);
 
-        Equation BTEquation = new de.tum.in.i4.hp2sat.causality.Equation(BT, BTFormula);
-        Equation STEquation = new de.tum.in.i4.hp2sat.causality.Equation(ST, STFormula);
-        Equation SHEquation = new de.tum.in.i4.hp2sat.causality.Equation(SH, SHFormula);
-        Equation BHEquation = new de.tum.in.i4.hp2sat.causality.Equation(BH, BHFormula);
-        Equation BSEquation = new de.tum.in.i4.hp2sat.causality.Equation(BS, BSFormula);
+        Equation BTEquation = new Equation(BT, BTFormula);
+        Equation STEquation = new Equation(ST, STFormula);
+        Equation SHEquation = new Equation(SH, SHFormula);
+        Equation BHEquation = new Equation(BH, BHFormula);
+        Equation BSEquation = new Equation(BS, BSFormula);
 
         Set<Equation> equations = new HashSet<>(Arrays.asList(BTEquation, STEquation, SHEquation, BHEquation, BSEquation));
 

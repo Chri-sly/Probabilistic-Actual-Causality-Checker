@@ -44,7 +44,6 @@ public class ProbabilityRaising {
         Map<Variable, Double> exogenousVariables = model.getExogenousVariables();
         FormulaFactory f = model.getFormulaFactory();
         List<Set<Literal>> contexts = new ArrayList<>();
-        int countPhiOccurs = 0;
         int countCauseOccurs = 0;
         int countBothOccur = 0;
         int countPhiNotCause = 0;
@@ -62,9 +61,6 @@ public class ProbabilityRaising {
             Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(model, context);
             Pair<Boolean, Boolean> ac1Tuple = ProbabilisticCausalitySolver.fulfillsPC1(evaluation, phi, cause);
 
-            if(ac1Tuple.first()) {
-                countPhiOccurs += 1;
-            }
             if(ac1Tuple.second()) {
                 countCauseOccurs += 1;
             }
@@ -76,27 +72,30 @@ public class ProbabilityRaising {
             }
         }
 
-        double givenCause = (double) countBothOccur / (double) countCauseOccurs;
-        double independent = (double) countPhiOccurs/ (double) numberOfCases;
-        double givenNotCause = (double) countPhiNotCause / (double) (numberOfCases - countCauseOccurs);
-
-        System.out.println("Both: " + countBothOccur);
-        System.out.println("Cause: " + countCauseOccurs);
-        System.out.println("Phi: " + countPhiOccurs);
-        System.out.println("P(E|C): " + givenCause);
-        System.out.println("P(E): " + independent);
-        System.out.println("P(E|not C): " + givenNotCause);
+        double givenCause = (double) countBothOccur / countCauseOccurs;
+        double givenNotCause = (double) countPhiNotCause / (numberOfCases - countCauseOccurs);
 
         return new ProbabilityRaisingResult(givenCause > givenNotCause, givenCause, givenNotCause);
     }
 
+    /**
+     * Method to check probability raising by computing the probability of each context that may occur and
+     * generating a number of contexts with the given
+     * probability of the uncertain exogenous variables and then counting in which cases the cause and phi or not the cause
+     * and phi occur.
+     * @param model causal model that represents the example
+     * @param phi the effect
+     * @param cause the possible cause of phi
+     * @param context the actual context of the given scenario
+     * @return
+     */
     public static ProbabilityRaisingResult computeActual(ProbabilisticCausalModel model, Formula phi, Set<Literal> cause, Set<Literal> context) {
         double probCAndE = 0.0;
         double probC = 0.0;
         double probNotCAndE = 0.0;
         double probNotC = 0.0;
-        Map<Variable, Double> exogenousVariables = model.getExogenousVariables();
 
+        Map<Variable, Double> exogenousVariables = model.getExogenousVariables();
         Set<Literal> exogenousAssignments = new HashSet<>();
         exogenousAssignments.addAll(exogenousVariables.keySet());
         for(Literal literal: exogenousVariables.keySet()){
@@ -107,7 +106,7 @@ public class ProbabilityRaising {
             if (exoAssignment.size() != exogenousVariables.size() || !exoAssignment.containsAll(context) || !UtilityMethods.noDuplicates(exoAssignment)) {
                 continue;
             }
-            System.out.println(exoAssignment);
+            
             Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(model, exoAssignment);
             Pair<Boolean, Boolean> ac1Tuple = ProbabilisticCausalitySolver.fulfillsPC1(evaluation, phi, cause);
             double modelProbability = model.getProbability(exoAssignment);
@@ -126,9 +125,6 @@ public class ProbabilityRaising {
                 probNotCAndE += modelProbability;
             }
         }
-
-        System.out.println("P(E|C): " + (probCAndE / probC));
-        System.out.println("P(E|not C): " + (probNotCAndE / probNotC));
 
         return new ProbabilityRaisingResult((probCAndE / probC) > (probNotCAndE / probNotC), (probCAndE / probC), (probNotCAndE / probNotC));
     }

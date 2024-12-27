@@ -61,14 +61,9 @@ public class PACSolver extends ProbabilisticCausalitySolver{
         // all exogenous variables
         Map<Variable, Double> exogenousVariables = causalModel.getExogenousVariables();
 
-        for(Literal lit: evaluation){
-            System.out.println(lit);
-        }
-
         Set<Literal> evaluationEndogenousVars = evaluation.stream()
                 .filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable())).collect(Collectors.toSet());
 
-        // create copy of original causal model
         ProbabilisticCausalModel causalModelForNegatedCause = createModifiedCausalModelForNegatedCause(causalModel, cause, f);
 
         // get the cause as set of variables
@@ -107,7 +102,6 @@ public class PACSolver extends ProbabilisticCausalitySolver{
                     Pair<Boolean, Boolean> ac1TupleNegated = ProbabilisticCausalitySolver.fulfillsPC1(negatedEvaluation, phi, cause.stream().map(Literal::negate)
                             .collect(Collectors.toSet()));
                     double negatedModelProbability = causalModelModifiedW.getProbability(exoAssignment);
-                    System.out.println("Exo:" + exoAssignment);
 
                     if(ac1TupleNegated.second()) {
                         probC += negatedModelProbability;
@@ -118,9 +112,6 @@ public class PACSolver extends ProbabilisticCausalitySolver{
                 }
             }
             double probCause = (probCAndE / probC);
-            System.out.println(probC);
-            System.out.println(probCAndE);
-            System.out.println(probCause);
             if(probCause < 1){
                 return w;
             }
