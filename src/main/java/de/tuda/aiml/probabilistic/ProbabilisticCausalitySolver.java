@@ -71,6 +71,7 @@ public abstract class ProbabilisticCausalitySolver {
         // remove empty set (index 0 as list is ordered!)
         allPotentialCauses.remove(0);
         Set<ProbabilisticCausalitySolverResult> allCauses = new HashSet<>();
+        System.out.println("Potentials " + allPotentialCauses);
         for (Set<Literal> cause : allPotentialCauses) {
             /*
              * if a subset of the currently analyzed potential cause is already a cause, we don't need to check the

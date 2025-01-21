@@ -1,6 +1,5 @@
 package de.tuda.aiml.util;
 
-import de.tuda.aiml.probabilistic.ProbabilisticCausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.Equation;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;

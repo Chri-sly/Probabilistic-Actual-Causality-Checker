@@ -89,7 +89,7 @@ public class PCPrimeSolver extends ProbabilisticCausalitySolver {
         }
         List<Set<Literal>> allSubsetsOfExoAssignments = (new Util<Literal>()).generatePowerSet(exogenousAssignments);
 
-        // Iterate over all W and Z
+        // Iterate over all W
         for (Set<Literal> w : allW) {
             Set<Literal> zVariables = evaluation.stream().filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable())).collect(Collectors.toSet());
             zVariables.removeAll(w);
@@ -113,9 +113,6 @@ public class PCPrimeSolver extends ProbabilisticCausalitySolver {
                 double probNotCAndE = 0.0;
                 double probNotC = 0.0;
                 boolean zFulfills = true;
-                double probCause = 0.0;
-                double notCause = 0.0;
-                List<Double> probList = new ArrayList<>();
 
                 zVariables.removeAll(cause);
                 List<Set<Literal>> allSubsetsOfZPrime = (new Util<Literal>()).generatePowerSet(zVariables);
@@ -152,21 +149,14 @@ public class PCPrimeSolver extends ProbabilisticCausalitySolver {
                         }
                     }
 
-                    probCause = (probCAndE / probC);
-                    notCause = (probNotCAndE / probNotC);
-                    probList.add(probCause);
+                    double probCause = (probCAndE / probC);
+                    double notCause = (probNotCAndE / probNotC);
                     if (probCause <= notCause) {
                         zFulfills = false;
                         break;
                     }
                 }
                 if(zFulfills){
-                    System.out.println("Prob 1. cond: " + probCause);
-                    System.out.println("W assignment " + wAssignment);
-                    System.out.println("Z: " + zVariables);
-                    System.out.println("P(not(C)): " + notCause);
-                    System.out.println("fulfill PC2 (a)");
-                    System.out.println("---------");
                     return wAssignment;
                 }
             }

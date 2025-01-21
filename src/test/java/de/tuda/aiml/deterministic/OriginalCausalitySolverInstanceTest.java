@@ -156,7 +156,7 @@ public class OriginalCausalitySolverInstanceTest {
     }
 
     @Test
-    public void Optical_voting() throws Exception {
+    public void Optical_voting_B_fulfills_all_conditions() throws Exception {
         CausalModel opticalVoting = DeterministicExampleProvider.opticalVoting();
         FormulaFactory f = opticalVoting.getFormulaFactory();
         Set<Literal> context = new HashSet<>(Arrays.asList(
@@ -167,6 +167,24 @@ public class OriginalCausalitySolverInstanceTest {
         CausalitySolverResult causalitySolverResultExpected =
                 new CausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList(f.literal("A", false),
                         f.literal("C", true))));
+
+        CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(opticalVoting, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
+
+        assertEquals(causalitySolverResultExpected, causalitySolverResultActual);
+    }
+
+    @Test
+    public void Optical_voting_C_fulfills_all_conditions() throws Exception {
+        CausalModel opticalVoting = DeterministicExampleProvider.opticalVoting();
+        FormulaFactory f = opticalVoting.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("A_exo", true)));
+        Set<Literal> cause = new HashSet<>(Arrays.asList(f.literal("C", true)));
+        Formula phi = f.literal("WIN", true);
+
+        CausalitySolverResult causalitySolverResultExpected =
+                new CausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList(f.literal("A", false),
+                        f.literal("B", true), f.literal("DPrime", false))));
 
         CausalitySolverResult causalitySolverResultActual = originalHPSolver.solve(opticalVoting, context, phi, cause, SolvingStrategy.ORIGINAL_HP);
 

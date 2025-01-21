@@ -1,8 +1,7 @@
-package de.tuda.aiml.responsibility;
+package de.tuda.aiml.blame;
 
 import de.tuda.aiml.util.DeterministicExampleProvider;
 import de.tum.in.i4.hp2sat.causality.CausalModel;
-import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
 import de.tum.in.i4.hp2sat.causality.SolvingStrategy;
 import org.junit.Test;
 import org.logicng.formulas.Formula;

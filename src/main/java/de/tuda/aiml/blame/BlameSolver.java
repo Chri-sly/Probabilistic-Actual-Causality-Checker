@@ -1,4 +1,4 @@
-package de.tuda.aiml.responsibility;
+package de.tuda.aiml.blame;
 
 import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.CausalitySolverResult;
@@ -32,7 +32,6 @@ public class BlameSolver {
 
     public double getBlameSameProbabilities(List<Set<Literal>> contexts) throws InvalidContextException, InvalidCauseException, InvalidCausalModelException, InvalidPhiException {
         double blame = 0.0;
-        System.out.println("Cause: " + cause);
         for (Set<Literal> context : contexts) {
             CausalitySolverResult result = model.isCause(context, phi, cause, strategy);
             for (Literal c : cause){
@@ -45,7 +44,6 @@ public class BlameSolver {
 
     public double getBlameDifferentProbabilities(Map<Set<Literal>, Double> contextsMap) throws InvalidContextException, InvalidCauseException, InvalidCausalModelException, InvalidPhiException {
         double blame = 0.0;
-        System.out.println("Cause: " + cause);
         for (Map.Entry<Set<Literal>, Double> pair : contextsMap.entrySet()) {
             CausalitySolverResult result = model.isCause(pair.getKey(), phi, cause, strategy);
             for (Literal c : cause){

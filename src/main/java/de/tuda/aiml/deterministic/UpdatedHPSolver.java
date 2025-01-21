@@ -50,7 +50,6 @@ public class UpdatedHPSolver extends CausalitySolver {
     private Set<Literal> fulfillsAC2(CausalModel causalModel, Formula phi, Set<Literal> cause, Set<Literal> context,
                                      Set<Literal> evaluation, FormulaFactory f) throws InvalidCausalModelException {
 
-        System.out.println("Cause: " + cause);
         // firstly, check the trivial case of empty W. Therefore, negate phi.
         Formula phiFormula = f.not(phi);
 
@@ -84,13 +83,11 @@ public class UpdatedHPSolver extends CausalitySolver {
             for(Literal lit: w){
                 wAssignments.add(lit.negate());
             }
-            System.out.println("W: " + w);
             List<Set<Literal>> allSubsetsOfWAssignments = (new Util<Literal>()).generatePowerSet(wAssignments);
             for(Set<Literal> wAssignment : allSubsetsOfWAssignments){
                 if(wAssignment.size() != w.size() || !UtilityMethods.noDuplicates(wAssignment)){
                     continue;
                 }
-                System.out.println(wAssignment);
                 // create a modified causal of the model in which we previously set X = x', by intervening
                 // on the values of the current variables in W using wAssignment
                 CausalModel causalModelForNegatedCauseModifiedW = createModifiedCausalModelForW(causalModelForNegatedCause, wAssignment, f);
@@ -100,10 +97,8 @@ public class UpdatedHPSolver extends CausalitySolver {
 
                 // Check AC2 (a): Not Phi should hold in model that has X = x' and W = w
                 if (phiFormula.evaluate(new Assignment(evaluationModified))) {
-                    System.out.println("Ac2(a) fulfilled");
                     // Create Z' as Z - X
                     zVariables.removeAll(cause);
-                    System.out.println("Z: " + zVariables);
                     List<Set<Literal>> allSubsetsOfZPrime = (new Util<Literal>()).generatePowerSet(zVariables);
 
                     // The difference to the original variant: check all subsets of W
@@ -124,8 +119,6 @@ public class UpdatedHPSolver extends CausalitySolver {
 
                             // Check AC2 (b): Phi fulfilled in model that has X = x, W' = w', Z' = z*
                             if(!phi.evaluate(new Assignment(evaluationModified))){
-                                System.out.println(evaluationModified);
-                                System.out.println("Not fulfilled for: " + zStar + "  " + wSubset);
                                 checkWSubsets = false;
                                 break;
                             }

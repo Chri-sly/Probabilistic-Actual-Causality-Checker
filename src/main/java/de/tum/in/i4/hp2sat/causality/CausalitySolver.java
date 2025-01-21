@@ -91,7 +91,7 @@ public abstract class CausalitySolver {
      * @return evaluation for all variables within the causal model (endo and exo); positive literal means true,
      * negative means false
      */
-    protected static Set<Literal> evaluateEquations(CausalModel causalModel, Set<Literal> context) {
+    public static Set<Literal> evaluateEquations(CausalModel causalModel, Set<Literal> context) {
         // initially, we can only assign the exogenous variables as defined by the context
         Assignment assignment = new Assignment(context);
         for (Equation equation : causalModel.getEquationsSorted()) {

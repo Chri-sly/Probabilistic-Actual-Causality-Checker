@@ -9,6 +9,11 @@ import java.util.Set;
  */
 public class UtilityMethods {
 
+    /**
+     * Whether the set of literals contains both phases of a literal or not
+     * @param literalSet Set of literals that are either positive or negative
+     * @return true if the set of literals contains not both values (true and negative) of one literal else false
+     */
     public static boolean noDuplicates(Set<Literal> literalSet){
         boolean flag = true;
         for(Literal literal : literalSet){

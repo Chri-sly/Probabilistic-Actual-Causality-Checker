@@ -1,6 +1,5 @@
 package de.tuda.aiml.util;
 
-import de.tum.in.i4.hp2sat.causality.CausalModel;
 import de.tum.in.i4.hp2sat.causality.Equation;
 import de.tum.in.i4.hp2sat.exceptions.InvalidCausalModelException;
 
@@ -552,47 +551,12 @@ public class ProbabilisticExampleProvider {
         return causalModel;
     }
 
-    // #################################################################################################################
-    // ################################################ PULL OUT PROBABILITY ###########################################
-    // #################################################################################################################
-    // Examples from Halpern's chapter 2.5 Probability and Causality
-
-    // Example mentioned during chapter 2.5
-    public static CausalModel billyAndSuzyHit() throws InvalidCausalModelException {
-        FormulaFactory f = new FormulaFactory();
-        Variable BTExo = f.variable("BT_exo");
-        Variable STExo = f.variable("ST_exo");
-        Variable SuzyHitsExo = f.variable("SuzyHits_exo");
-        Variable BillyHitsExo = f.variable("BillyHits_exo");
-
-        Variable BT = f.variable("BT");
-        Variable ST = f.variable("ST");
-        Variable BH = f.variable("BH");
-        Variable SH = f.variable("SH");
-        Variable BS = f.variable("BS");
-
-        Formula BTFormula = BTExo;
-        Formula STFormula = STExo;
-        Formula SHFormula = f.and(ST, SuzyHitsExo);
-        Formula BHFormula = f.and(f.and(BT, f.not(SH)), BillyHitsExo);
-        Formula BSFormula = f.or(SH, BH);
-
-        de.tum.in.i4.hp2sat.causality.Equation BTEquation = new de.tum.in.i4.hp2sat.causality.Equation(BT, BTFormula);
-        de.tum.in.i4.hp2sat.causality.Equation STEquation = new de.tum.in.i4.hp2sat.causality.Equation(ST, STFormula);
-        de.tum.in.i4.hp2sat.causality.Equation SHEquation = new de.tum.in.i4.hp2sat.causality.Equation(SH, SHFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BHEquation = new de.tum.in.i4.hp2sat.causality.Equation(BH, BHFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BSEquation = new de.tum.in.i4.hp2sat.causality.Equation(BS, BSFormula);
-
-        Set<de.tum.in.i4.hp2sat.causality.Equation> equations = new HashSet<>(Arrays.asList(BTEquation, STEquation, SHEquation, BHEquation,
-                BSEquation));
-        Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(BTExo, STExo, SuzyHitsExo, BillyHitsExo));
-
-        CausalModel causalModel = new CausalModel("BillyAndSuzyHit", equations, exogenousVariables, f);
-        return causalModel;
-    }
-
-    // Example 2.5.1
-    public static CausalModel doctorTreatment() throws InvalidCausalModelException {
+    /**
+     *
+     * @return
+     * @throws InvalidCausalModelException
+     */
+    public static ProbabilisticCausalModel doctorTreatment() throws InvalidCausalModelException {
         FormulaFactory f = new FormulaFactory();
         Variable MTExo = f.variable("MT_exo");
         Variable OFExo = f.variable("OF_exo");
@@ -607,19 +571,23 @@ public class ProbabilisticExampleProvider {
         Formula OFFormula = OFExo;
         Formula BMCFormula = f.or(f.and(MT, TreatmentWorksExo), f.and(OF, OtherFactorsWorkExo));
 
-        de.tum.in.i4.hp2sat.causality.Equation MTEquation = new de.tum.in.i4.hp2sat.causality.Equation(MT, MTFormula);
-        de.tum.in.i4.hp2sat.causality.Equation OFEquation = new de.tum.in.i4.hp2sat.causality.Equation(OF, OFFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BMCEquation = new de.tum.in.i4.hp2sat.causality.Equation(BMC, BMCFormula);
+        Equation MTEquation = new Equation(MT, MTFormula);
+        Equation OFEquation = new Equation(OF, OFFormula);
+        Equation BMCEquation = new Equation(BMC, BMCFormula);
 
-        Set<de.tum.in.i4.hp2sat.causality.Equation> equations = new HashSet<>(Arrays.asList(MTEquation, OFEquation, BMCEquation));
-        Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(MTExo, OFExo, TreatmentWorksExo, OtherFactorsWorkExo));
+        Set<Equation> equations = new HashSet<>(Arrays.asList(MTEquation, OFEquation, BMCEquation));
+        Map<Variable, Double> exogenousVariables = new HashMap<>();
+        exogenousVariables.put(MTExo, 0.8);
+        exogenousVariables.put(OFExo, 0.9);
+        exogenousVariables.put(TreatmentWorksExo, 0.9);
+        exogenousVariables.put(OtherFactorsWorkExo, 0.1);
 
-        CausalModel causalModel = new CausalModel("DoctorTreatment", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("DoctorTreatment", equations, exogenousVariables, f);
         return causalModel;
     }
 
     // Example 2.5.2
-    public static CausalModel twoDoctorTreatment() throws InvalidCausalModelException {
+    public static ProbabilisticCausalModel twoDoctorTreatment() throws InvalidCausalModelException {
         FormulaFactory f = new FormulaFactory();
         Variable D1TreatmentExo = f.variable("D1_exo");
         Variable D2TreatmentExo = f.variable("D2_exo");
@@ -640,22 +608,27 @@ public class ProbabilisticExampleProvider {
         Formula BMCFormula = f.or(f.or(f.and(D1TEffective, f.not(D2TEffective), f.and(D2TEffective, f.not(D1TEffective)))),
                 f.and(f.and(f.not(BadInteractionExo), D1TEffective), D2TEffective));
 
-        de.tum.in.i4.hp2sat.causality.Equation D1TEquation = new de.tum.in.i4.hp2sat.causality.Equation(D1T, D1TFormula);
-        de.tum.in.i4.hp2sat.causality.Equation D2TEquation = new de.tum.in.i4.hp2sat.causality.Equation(D2T, D2TFormula);
-        de.tum.in.i4.hp2sat.causality.Equation D1TEffectiveEquation = new de.tum.in.i4.hp2sat.causality.Equation(D1TEffective, D1TEffectiveFormula);
-        de.tum.in.i4.hp2sat.causality.Equation D2TEffectiveEquation = new de.tum.in.i4.hp2sat.causality.Equation(D2TEffective, D2TEffectiveFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BMCEquation = new de.tum.in.i4.hp2sat.causality.Equation(BMC, BMCFormula);
+        Equation D1TEquation = new Equation(D1T, D1TFormula);
+        Equation D2TEquation = new Equation(D2T, D2TFormula);
+        Equation D1TEffectiveEquation = new Equation(D1TEffective, D1TEffectiveFormula);
+        Equation D2TEffectiveEquation = new Equation(D2TEffective, D2TEffectiveFormula);
+        Equation BMCEquation = new Equation(BMC, BMCFormula);
 
-        Set<de.tum.in.i4.hp2sat.causality.Equation> equations = new HashSet<>(Arrays.asList(D1TEquation, D2TEquation,
+        Set<Equation> equations = new HashSet<>(Arrays.asList(D1TEquation, D2TEquation,
                 D1TEffectiveEquation, D2TEffectiveEquation, BMCEquation));
-        Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(D1TreatmentExo, D2TreatmentExo, D1TreatmentWorksExo, D2TreatmentWorksExo, BadInteractionExo));
+        Map<Variable, Double> exogenousVariables = new HashMap<>();
+        exogenousVariables.put(D1TreatmentExo, 1.0);
+        exogenousVariables.put(D2TreatmentExo, 1.0);
+        exogenousVariables.put(D1TreatmentWorksExo, 0.9);
+        exogenousVariables.put(D2TreatmentWorksExo, 0.9);
+        exogenousVariables.put(BadInteractionExo, 0.8);
 
-        CausalModel causalModel = new CausalModel("TwoDoctorTreatment", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("TwoDoctorTreatment", equations, exogenousVariables, f);
         return causalModel;
     }
 
     // Example 2.5.4
-    public static CausalModel billyAndSuzyTopple() throws InvalidCausalModelException {
+    public static ProbabilisticCausalModel billyAndSuzyTopple() throws InvalidCausalModelException {
         FormulaFactory f = new FormulaFactory();
         Variable BTExo = f.variable("BT_exo");
         Variable STExo = f.variable("ST_exo");
@@ -676,17 +649,22 @@ public class ProbabilisticExampleProvider {
         Formula BTOFormula = f.or(f.or(f.and(BH, SH), ToppleBothHitExo), f.and(BH, f.not(SH), ToppleBillyHitExo),
                 f.and(SH, f.not(BH), ToppleSuzyHitExo));
 
-        de.tum.in.i4.hp2sat.causality.Equation BTEquation = new de.tum.in.i4.hp2sat.causality.Equation(BT, BTFormula);
-        de.tum.in.i4.hp2sat.causality.Equation STEquation = new de.tum.in.i4.hp2sat.causality.Equation(ST, STFormula);
-        de.tum.in.i4.hp2sat.causality.Equation SHEquation = new de.tum.in.i4.hp2sat.causality.Equation(SH, SHFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BHEquation = new de.tum.in.i4.hp2sat.causality.Equation(BH, BHFormula);
-        de.tum.in.i4.hp2sat.causality.Equation BTOEquation = new de.tum.in.i4.hp2sat.causality.Equation(BTO, BTOFormula);
+        Equation BTEquation = new Equation(BT, BTFormula);
+        Equation STEquation = new Equation(ST, STFormula);
+        Equation SHEquation = new Equation(SH, SHFormula);
+        Equation BHEquation = new Equation(BH, BHFormula);
+        Equation BTOEquation = new Equation(BTO, BTOFormula);
 
-        Set<de.tum.in.i4.hp2sat.causality.Equation> equations = new HashSet<>(Arrays.asList(BTEquation, STEquation, SHEquation, BHEquation,
+        Set<Equation> equations = new HashSet<>(Arrays.asList(BTEquation, STEquation, SHEquation, BHEquation,
                 BTOEquation));
-        Set<Variable> exogenousVariables = new HashSet<>(Arrays.asList(BTExo, STExo, ToppleBothHitExo, ToppleBillyHitExo, ToppleSuzyHitExo));
+        Map<Variable, Double> exogenousVariables = new HashMap<>();
+        exogenousVariables.put(BTExo, 1.0);
+        exogenousVariables.put(STExo, 1.0);
+        exogenousVariables.put(ToppleBothHitExo, 0.7);
+        exogenousVariables.put(ToppleBillyHitExo, 0.2);
+        exogenousVariables.put(ToppleSuzyHitExo, 0.2);
 
-        CausalModel causalModel = new CausalModel("BillyAndSuzyTopple", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("BillyAndSuzyTopple", equations, exogenousVariables, f);
         return causalModel;
     }
 }

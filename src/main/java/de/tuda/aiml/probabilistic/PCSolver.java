@@ -88,7 +88,7 @@ class PCSolver extends ProbabilisticCausalitySolver {
         }
         List<Set<Literal>> allSubsetsOfExoAssignments = (new Util<Literal>()).generatePowerSet(exogenousAssignments);
 
-        // Iterate over all W and Z
+        // Iterate over all W
         for (Set<Literal> w : allW) {
             Set<Literal> zVariables = evaluation.stream().filter(l -> !causalModel.getExogenousVariables().keySet().contains(l.variable())).collect(Collectors.toSet());
             zVariables.removeAll(w);
@@ -154,8 +154,8 @@ class PCSolver extends ProbabilisticCausalitySolver {
                     double probC2 = 0.0;
                     double probCause2;
                     boolean zFulfills = true;
-                    List<Double> probList = new ArrayList<>();
 
+                    // Iterate over Z*
                     for(Set<Literal> zStar : allSubsetsOfZPrime) {
                         ProbabilisticCausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModifiedW, zStar, f);
                         for (Set<Literal> exoAssignment : allSubsetsOfExoAssignments) {
@@ -172,9 +172,8 @@ class PCSolver extends ProbabilisticCausalitySolver {
                                 }
                             }
                         }
-
                         probCause2 = (probCAndE2 / probC2);
-                        probList.add(probCause2);
+
                         // Check PC2 (b)
                         if (probCause2 <= notCause) {
                             zFulfills = false;
@@ -182,16 +181,6 @@ class PCSolver extends ProbabilisticCausalitySolver {
                         }
                     }
                     if(zFulfills){
-                        System.out.println("Prob 1. cond: " + probCause);
-                        System.out.println(probCAndE2 + "  " + probC2);
-                        System.out.println("W assignment " + wAssignment);
-                        System.out.println("Z: " + zVariables);
-                        for(double prob: probList){
-                            System.out.println("Prob: " + prob);
-                        }
-                        System.out.println("P(not(C)): " + notCause);
-                        System.out.println("fulfill PC2 (a)");
-                        System.out.println("---------");
                         return wAssignment;
                     }
                 }
