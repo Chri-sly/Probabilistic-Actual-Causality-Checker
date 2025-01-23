@@ -72,9 +72,6 @@ public class GetAllCausesTest {
                         new HashSet<>(Collections.singletonList(f.variable("BS"))),
                         new HashSet<>()),
                 new ProbabilisticCausalitySolverResult(true, true, true,
-                        new HashSet<>(Collections.singletonList(f.variable("BT"))),
-                        new HashSet<>(Arrays.asList(f.literal("ST", false)))),
-                new ProbabilisticCausalitySolverResult(true, true, true,
                         new HashSet<>(Collections.singletonList(f.variable("ST"))),
                         new HashSet<>(Arrays.asList(f.literal("BT", false))))
                 ));

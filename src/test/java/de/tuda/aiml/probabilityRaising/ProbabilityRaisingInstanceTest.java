@@ -120,6 +120,7 @@ public class ProbabilityRaisingInstanceTest {
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 0.0);
     }
 
+    // Forest fire
     @Test
     public void Match_drop_Causes_Forest_fire() throws Exception {
         ProbabilisticCausalModel Forest_Fire = ProbabilisticExampleProvider.prob_forest_fire();
@@ -136,12 +137,15 @@ public class ProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpected =
                 new ProbabilityRaisingResult(false, 0.73, Double.NaN);
 
+        ProbabilityRaisingResult probabilityRaisingTrueResultExpected =
+                new ProbabilityRaisingResult(true, 0.62, 0.21);
+
         ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Forest_Fire, 3000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Forest_Fire, phi, cause, context);
 
-        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
-        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
-        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
+        assertEquals(probabilityRaisingTrueResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
+        assertEquals(probabilityRaisingTrueResultExpected.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
+        assertEquals(probabilityRaisingTrueResultExpected.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultActual.isCause());
         assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultActual.getPC(), 1e-10);
@@ -162,21 +166,24 @@ public class ProbabilityRaisingInstanceTest {
         Formula phi = f.variable("FF");
 
         ProbabilityRaisingResult probabilityRaisingResultExpected =
-                new ProbabilityRaisingResult(true, 0.73, 0.55);
+                new ProbabilityRaisingResult(false, 0.73, Double.NaN);
+
+        ProbabilityRaisingResult probabilityRaisingResultExpectedGeneral =
+                new ProbabilityRaisingResult(true, 0.53, 0.23);
 
         ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Forest_Fire, 3000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Forest_Fire, phi, cause, context);
 
-        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
-        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
-        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
+        assertEquals(probabilityRaisingResultExpectedGeneral.isCause(), probabilityRaisingResultGeneral.isCause());
+        assertEquals(probabilityRaisingResultExpectedGeneral.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
+        assertEquals(probabilityRaisingResultExpectedGeneral.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultActual.isCause());
         assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultActual.getPC(), 1e-10);
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 1e-10);
     }
 
-    // Don's and Police example
+    // Police parade
     @Test
     public void Corleones_Order_Cause_of_Death() throws Exception {
         ProbabilisticCausalModel Don_Corleone = ProbabilisticExampleProvider.donPolice();
@@ -239,6 +246,7 @@ public class ProbabilityRaisingInstanceTest {
         assertEquals(Double.NaN, probabilityRaisingResultActual.getNotPC(), 0.0);
     }
 
+    // Barometer
     @Test
     public void Barometer_Drop_causes_Rain() throws Exception {
         ProbabilisticCausalModel Barometer = ProbabilisticExampleProvider.barometer();
@@ -279,6 +287,9 @@ public class ProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpected =
                 new ProbabilityRaisingResult(true, 1.0, 0.0);
 
+        ProbabilityRaisingResult probabilityRaisingResultExpectedFalse =
+                new ProbabilityRaisingResult(false, Double.NaN, 0.5);
+
         ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 3000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Barometer, phi, cause, context);
 
@@ -286,9 +297,9 @@ public class ProbabilityRaisingInstanceTest {
         assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
 
-        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultActual.isCause());
-        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultActual.getPC(), 1e-10);
-        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 0.0);
+        assertEquals(probabilityRaisingResultExpectedFalse.isCause(), probabilityRaisingResultActual.isCause());
+        assertEquals(probabilityRaisingResultExpectedFalse.getPC(), probabilityRaisingResultActual.getPC(), 1e-10);
+        assertEquals(probabilityRaisingResultExpectedFalse.getNotPC(), probabilityRaisingResultActual.getNotPC(), 0.0);
     }
 
     @Test

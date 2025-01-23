@@ -1,6 +1,3 @@
-# Actual Probabilistic Causality: Approaches and Implementation
-Bachelor thesis project by Christopher Schubert for a degree in computer science at the Artificial Intelligence and Machine Learning Lab at
-=======
 # Probabilistic Actual Causality: Approaches and Implementation
 Bachelor thesis project by Christopher Schubert in computer science at Artificial Intelligence and Machine Learning Lab,
 
@@ -93,24 +90,21 @@ ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Don_Corleon
 #### Check whether *C = 1* is a cause of *D = 1* in the previously created probabilistic causal model given *CI_exo, BI_exo = 1* as context
 ```java
 // IMPORTANT: Use the same FormulaFactory instance as in the above!
+ProbabilisticCausalModel police_parade = ProbabilisticExampleProvider.donPolice();
+FormulaFactory f = police_parade.getFormulaFactory();
 
+Set<Literal> context = new HashSet<>(Arrays.asList(f.literal("CI_exo", true), f.literal("BI_exo", true), 
+        f.literal("SonnyShoots", true),f.literal("SonnyHits", true)));
 /*
- * Create positive or negative literals for the exogenous variables whose value we know.
- */
-Set<Literal> context = new HashSet<>(Arrays.asList(
-        f.literal("CI_exo", true), f.literal("BI_exo", true), f.literal("SonnyShoots", true), f.literal("SonnyHits", true)
-        ));
-
-/*
- * Similar as for the context, we specify f.literal("C", true) as cause and f.variable("D") as phi, as we 
- * want to express C = 1 and D = 1, respectively.
- */
-Set<Literal> cause = new HashSet<>((Collections.singletonList(f.literal("C", true)));
-
-Formula phi = f.variable("D");Formula phi = f.variable("BS");
+* Similar as for the context, we specify f.literal("C", true) as cause and f.variable("D") as phi, as we
+* want to express C = 1 and D = 1 respectively.
+*/
+Set<Literal> cause = new HashSet<>((Collections.singletonList(f.literal("C", true))));
+Formula phi = f.variable("D");
 
 // check whether the cause with this phi fulfills all conditions of PC in this context
- ProbabilisticCausalitySolverResult result = pcSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+PCSolver pcSolver = new PCSolver();
+ProbabilisticCausalitySolverResult result = pcSolver.solve(police_parade, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 ```
 
 ### Important Notes

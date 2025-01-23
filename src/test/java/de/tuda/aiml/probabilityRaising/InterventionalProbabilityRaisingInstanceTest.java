@@ -69,7 +69,6 @@ public class InterventionalProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpected =
                 new ProbabilityRaisingResult(true, 0.545, 0.09);
 
-        ProbabilityRaisingResult probabilityRaisingResultGeneral  = InterventionalProbabilityRaising.compute(prob_rock_throwing_cause_lowers_prob, 3000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = InterventionalProbabilityRaising.computeActual(prob_rock_throwing_cause_lowers_prob, phi, cause, context);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultActual.isCause());
@@ -90,7 +89,6 @@ public class InterventionalProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpected =
                 new ProbabilityRaisingResult(true, 0.95, 0.5);
 
-        ProbabilityRaisingResult probabilityRaisingResultGeneral  = InterventionalProbabilityRaising.compute(prob_rock_throwing_cause_lowers_prob, 3000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = InterventionalProbabilityRaising.computeActual(prob_rock_throwing_cause_lowers_prob, phi, cause, context);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultActual.isCause());

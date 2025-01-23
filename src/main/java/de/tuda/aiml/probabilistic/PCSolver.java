@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of the PC definition
  */
-class PCSolver extends ProbabilisticCausalitySolver {
+public class PCSolver extends ProbabilisticCausalitySolver {
     /**
      * Overrides {@link ProbabilisticCausalitySolver#solve(ProbabilisticCausalModel, Set, Formula, Set, ProbabilisticSolvingStrategy)}.
      *
@@ -150,16 +150,15 @@ class PCSolver extends ProbabilisticCausalitySolver {
                     zVariables.removeAll(cause);
                     List<Set<Literal>> allSubsetsOfZPrime = (new Util<Literal>()).generatePowerSet(zVariables);
 
-                    double probCAndE2 = 0.0;
-                    double probC2 = 0.0;
-                    double probCause2;
                     boolean zFulfills = true;
 
                     // Iterate over Z*
                     for(Set<Literal> zStar : allSubsetsOfZPrime) {
+                        double probCAndE2 = 0.0;
+                        double probC2 = 0.0;
                         ProbabilisticCausalModel causalModelModWModZStar = createModifiedCausalModelForW(causalModelModifiedW, zStar, f);
                         for (Set<Literal> exoAssignment : allSubsetsOfExoAssignments) {
-                            if (exoAssignment.size() != exogenousVariables.size() || !exoAssignment.containsAll(context) || !UtilityMethods.noDuplicates(exoAssignment)) {
+                            if (exoAssignment.size() != exogenousVariables.size() || !UtilityMethods.noDuplicates(exoAssignment)) {
                                 evaluationModified = ProbabilisticCausalitySolver.evaluateEquations(causalModelModWModZStar, exoAssignment);
                                 Pair<Boolean, Boolean> ac1Tuple = ProbabilisticCausalitySolver.fulfillsPC1(evaluationModified, phi, cause);
                                 double modelProbability = causalModelModWModZStar.getProbability(exoAssignment);
@@ -172,7 +171,7 @@ class PCSolver extends ProbabilisticCausalitySolver {
                                 }
                             }
                         }
-                        probCause2 = (probCAndE2 / probC2);
+                        double probCause2 = (probCAndE2 / probC2);
 
                         // Check PC2 (b)
                         if (probCause2 <= notCause) {

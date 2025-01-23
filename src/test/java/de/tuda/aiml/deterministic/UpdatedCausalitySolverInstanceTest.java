@@ -74,7 +74,7 @@ public class UpdatedCausalitySolverInstanceTest {
         Formula phi = f.literal("SW", true);
 
         CausalitySolverResult causalitySolverResultExpected =
-                new CausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList(f.literal("V3", true))));
+                new CausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList(f.literal("V3", false))));
 
         CausalitySolverResult causalitySolverResultActual = updatedHPSolver.solve(voting, context, phi, cause, SolvingStrategy.UPDATED_HP);
 

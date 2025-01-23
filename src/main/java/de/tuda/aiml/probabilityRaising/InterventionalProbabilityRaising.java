@@ -21,44 +21,6 @@ import java.util.stream.Collectors;
  */
 public class InterventionalProbabilityRaising{
 
-    public static ProbabilityRaisingResult compute(ProbabilisticCausalModel model, int numberOfCases, Formula phi, Set<Literal> cause) {
-        Map<Variable, Double> exogenousVariables = model.getExogenousVariables();
-        FormulaFactory f = model.getFormulaFactory();
-        List<Set<Literal>> contexts = new ArrayList<>();
-        int countCauseOccurs = 0;
-        int countBothOccur = 0;
-        int countPhiNotCause = 0;
-
-        // Generate contexts according to the probabilities of the exogenous variables
-        for(int i = 0; i < numberOfCases; i++){
-            Set<Literal> context = new HashSet<>();
-            for(Variable var : exogenousVariables.keySet()){
-                boolean b = Math.random() < exogenousVariables.get(var) ? context.add(f.literal(var.name(), true)) : context.add(f.literal(var.name(), false));
-            }
-            contexts.add(context);
-        }
-
-        for(Set<Literal> context : contexts){
-            Set<Literal> evaluation = ProbabilisticCausalitySolver.evaluateEquations(model, context);
-            Pair<Boolean, Boolean> ac1Tuple = ProbabilisticCausalitySolver.fulfillsPC1(evaluation, phi, cause);
-
-            if(ac1Tuple.second()) {
-                countCauseOccurs += 1;
-            }
-            if(ac1Tuple.first() && ac1Tuple.second()){
-                countBothOccur += 1;
-            }
-            if(ac1Tuple.first() && !ac1Tuple.second()){
-                countPhiNotCause += 1;
-            }
-        }
-
-        double givenCause = (double) countBothOccur / countCauseOccurs;
-        double givenNotCause = (double) countPhiNotCause / (numberOfCases - countCauseOccurs);
-
-        return new ProbabilityRaisingResult(givenCause > givenNotCause, givenCause, givenNotCause);
-    }
-
     public static ProbabilityRaisingResult computeActual(ProbabilisticCausalModel model, Formula phi, Set<Literal> cause, Set<Literal> context) throws InvalidCausalModelException {
         FormulaFactory f = model.getFormulaFactory();
         ProbabilisticCausalModel causalModelForCause = ProbabilisticCausalitySolver.createModifiedCausalModelForCause(model, cause, f);

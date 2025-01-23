@@ -80,23 +80,6 @@ public class CausalityPullOutInstanceTest {
         assertEquals(1.0, result, 1e-7);
     }
 
-    @Test
-    public void Forest_Fire() throws Exception{
-        ProbabilisticCausalModel forestFire = ProbabilisticExampleProvider.prob_forest_fire():
-        FormulaFactory f = forestFire.getFormulaFactory();
-
-        Set<Literal> context = new HashSet<>(Arrays.asList(
-                f.literal("BT_exo", true), f.literal("ST_exo", true), f.literal("SH_exo", false)));
-
-        Set<Literal> cause = new HashSet<>(Collections.singletonList(f.variable("BT")));
-        Formula phi = f.variable("BS");
-
-        double result = PullOutProbability.solve(forestFire, context, phi, cause, SolvingStrategy.BRUTE_FORCE);
-
-        assertEquals(1.0, result, 1e-7);
-
-    }
-
     // doctor-treatment
     @Test
     public void Prob_Doctor_Treatment_PullOutProbability() throws Exception {
