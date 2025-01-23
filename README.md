@@ -1,5 +1,5 @@
 # Probabilistic Actual Causality: Approaches and Implementation
-Bachelor thesis project by Christopher Schubert in computer science at Artificial Intelligence and Machine Learning Lab.
+Bachelor thesis project by Christopher Schubert in computer science at Artificial Intelligence and Machine Learning Lab at TU Darmstadt.
 
 ## Background
 In my bachelor's thesis I looked at the different approaches towards extending actual causation
