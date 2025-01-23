@@ -1,19 +1,19 @@
 # Probabilistic Actual Causality: Approaches and Implementation
-Bachelor thesis project by Christopher Schubert in computer science at Artificial Intelligence and Machine Learning Lab,
+Bachelor thesis project by Christopher Schubert in computer science at Artificial Intelligence and Machine Learning Lab.
 
 ## Background
 In my bachelor's thesis I looked at the different approaches towards extending actual causation
-for probabilistic scenarios and implemented them algorithmically. In the course of this, I went from the simple, conditional probability raising principle
+for probabilistic scenarios and implementing them algorithmically. In the course of this, I went from the simple conditional probability raising principle
 to causal modelling approaches employing interventions to create counterfactual scenarios. The leading work on actual causation
-in causal models is the Halpern-Pearl (HP) definition of actual causation [2]. However, they only present a definition in
-deterministic scenarios. Thus, I looked at probabilistic extensions of the Halpern-Pearl definition like 
+in causal models is the Halpern-Pearl (HP) definition of actual causation [2]. However, this definition is only defined in
+deterministic scenarios. Thus, I focused on probabilistic extensions of the Halpern-Pearl definition like 
 [Fenton-Glynn's definition of PC]().
 
 ## Implementation
 To implement these approaches I chose to extend a previous work on actual causation, namely that of [Ibrahim et al.](https://arxiv.org/abs/1904.13101) [1].
 In their project, they provide an implementation to efficiently compute the modified variant of the HP definition https://github.com/amjadKhalifah/HP2SAT1.0.
-I extended their work to also handle probabilistic scenarios for actual causation and implemented the other two variants
-of the HP definition (Original and Updated). All of my work can be found in the ```main/java/de/tuda.aiml/``` folder and the
+I extended their work to also handle probabilistic scenarios for actual causation. Addtionally, I implemented the other two variants
+of the HP definition that were missing (Original and Updated). All of my work can be found in the ```main/java/de/tuda.aiml/``` folder and the respective
 tests in ```test/java/de/tuda.aiml/```.
 
 ### Algorithms
