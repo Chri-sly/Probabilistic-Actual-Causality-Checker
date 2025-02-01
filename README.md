@@ -121,4 +121,4 @@ characteristics; otherwise an exception is thrown:
 
 [1] Ibrahim, A., Rehwald, S., Pretschner, A.: Efficiently checking actual causality with sat solving. In: Dependable Software Systems Engineering (2019), https://arxiv.org/abs/1904.13101
 
-[2] J. Y. Halpern. "A Modification of the Halpern-Pearl Definition of Causality." In: Proceedings of the Twenty-Fourth International Joint Conference on Artificial Intelligence, IJCAI 2015, Buenos Aires, Argentina, July 25-31, 2015. 2015, pp. 3022–3033.
+[2] Joseph Y. Halpern. Actual Causality. The MIT Press, 2016
