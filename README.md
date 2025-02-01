@@ -6,8 +6,7 @@ In my bachelor's thesis I looked at the different approaches towards extending a
 for probabilistic scenarios and implementing them algorithmically. In the course of this, I went from the simple conditional probability raising principle
 to causal modelling approaches employing interventions to create counterfactual scenarios. The leading work on actual causation
 in causal models is the Halpern-Pearl (HP) definition of actual causation [2]. However, this definition is only defined in
-deterministic scenarios. Thus, I focused on probabilistic extensions of the Halpern-Pearl definition like 
-[Fenton-Glynn's definition of PC]().
+deterministic scenarios. Thus, I focused on probabilistic extensions of the Halpern-Pearl definition like Fenton-Glynn's definition of PC.
 
 ## Implementation
 To implement these approaches I chose to extend a previous work on actual causation, namely that of [Ibrahim et al.](https://arxiv.org/abs/1904.13101) [1].
