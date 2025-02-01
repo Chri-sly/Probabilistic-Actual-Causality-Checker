@@ -39,7 +39,7 @@ public class PCPrimeSolverInstanceTest {
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,
                         new HashSet<>());
 
-        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -61,7 +61,7 @@ public class PCPrimeSolverInstanceTest {
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
                 new ProbabilisticCausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList(f.literal("C", false))));
 
-        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Don_Corleone, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -84,7 +84,7 @@ public class PCPrimeSolverInstanceTest {
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,
                         new HashSet<>(Arrays.asList(f.literal("A", true))));
 
-        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -103,9 +103,10 @@ public class PCPrimeSolverInstanceTest {
         Formula phi = f.not(f.variable("D"));
 
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
-                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList(f.literal("B", false))));
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,
+                        new HashSet<>(Arrays.asList(f.literal("B", false))));
 
-        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Assassin, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -126,9 +127,9 @@ public class PCPrimeSolverInstanceTest {
         Formula phi = f.variable("SW");
 
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
-                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList(f.literal("V3", false))));
+                new ProbabilisticCausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList(f.literal("V3", false))));
 
-        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -148,9 +149,9 @@ public class PCPrimeSolverInstanceTest {
         Formula phi = f.variable("SW");
 
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
-                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
+                new ProbabilisticCausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList()));
 
-        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
@@ -170,10 +171,125 @@ public class PCPrimeSolverInstanceTest {
         Formula phi = f.variable("E");
 
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
-                new ProbabilisticCausalitySolverResult(true, false, true, cause,  null);
+                new ProbabilisticCausalitySolverResult(true, false, true, cause, null);
 
-        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    // Switching Tracks
+    @Test
+    public void Engineer_flipping_switch_cause_of_train_arrival() throws Exception {
+        ProbabilisticCausalModel Switching = ProbabilisticExampleProvider.prob_switching_tracks();
+        FormulaFactory f = Switching.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("LB_exo", false), f.literal("RB_exo", false),
+                f.literal("A_exo", true)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("A");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,
+                        new HashSet<>(Arrays.asList(f.literal("LB", true))));
+
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Switching, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    // Shooting Deer (Late Preemption)
+    @Test
+    public void Alice_shooting_cause_of_deers_death() throws Exception {
+        ProbabilisticCausalModel Deer = ProbabilisticExampleProvider.prob_shooting_deer();
+        FormulaFactory f = Deer.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("BI_exo", true), f.literal("A_exo", true), f.literal("B_exo", false),
+                f.literal("D0_exo", true), f.literal("D1_exo", true)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("A"));
+
+        Formula phi = f.variable("D101");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause, new HashSet<>(Arrays.asList()));
+
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Deer, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    // Boulder
+    @Test
+    public void Boulder_fall_not_cause_of_hiker_surviving() throws Exception {
+        ProbabilisticCausalModel Boulder = ProbabilisticExampleProvider.prob_boulder();
+        FormulaFactory f = Boulder.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("D_exo", true), f.literal("SB_exo", true),
+                f.literal("SNB_exo", false)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("S");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, false, true, cause, null);
+
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Boulder, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    @Test
+    public void Boulder_fall_cause_hiker_ducking() throws Exception {
+        ProbabilisticCausalModel Boulder = ProbabilisticExampleProvider.prob_boulder();
+        FormulaFactory f = Boulder.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("D_exo", true), f.literal("SB_exo", true),
+                f.literal("SNB_exo", false)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("D");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
+
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Boulder, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    @Test
+    public void Hiker_ducking_causes_surviving() throws Exception {
+        ProbabilisticCausalModel Boulder = ProbabilisticExampleProvider.prob_boulder();
+        FormulaFactory f = Boulder.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("D_exo", true), f.literal("SB_exo", true),
+                f.literal("SNB_exo", false)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("D");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
+
+        ProbabilisticCausalitySolverResult result = pcPrimeSolver.solve(Boulder, context, phi, cause, ProbabilisticSolvingStrategy.PCPrime);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }
 }
+

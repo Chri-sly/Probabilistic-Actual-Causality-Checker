@@ -347,7 +347,7 @@ public class ProbabilisticExampleProvider {
         Formula RBFormula = RBExo;
 
         PropositionalParser p = new PropositionalParser(f);
-        Formula AFormula = p.parse("(F & LB & ~RB & A) | (F & ~LB & ~RB & A) | (~F & ~LB & RB & A) | (~F & ~LB & ~RB & A)");
+        Formula AFormula = p.parse("(F & LB & ~RB & A_exo) | (F & ~LB & ~RB & A_exo) | (~F & ~LB & RB & A_exo) | (~F & ~LB & ~RB & A_exo)");
 
         Equation FEquation = new Equation(F, FFormula);
         Equation LBEquation = new Equation(LB, LBFormula);
@@ -398,7 +398,7 @@ public class ProbabilisticExampleProvider {
         Formula AFormula = AExo;
         Formula D100Formula = f.and(A, D0Exo);
         Formula BFormula = f.and(f.and(BI, f.not(D100)), BExo);
-        Formula D101Formula = p.parse("(B & D100) | (B & ~D100 & D1Exo) | (~B & D100)");
+        Formula D101Formula = p.parse("(B & D100) | (B & ~D100 & D1_exo) | (~B & D100)");
 
         Equation BIEquation = new Equation(BI, BIFormula);
         Equation AEquation = new Equation(A, AFormula);
@@ -444,7 +444,9 @@ public class ProbabilisticExampleProvider {
 
         Formula FFormula = FExo;
         Formula DFormula = f.and(F, DExo);
-        Formula SFormula = p.parse("(F & D & SBExo) | (~F & D & SNBExo) | (~F & ~F & SNBExo)");
+        Formula SFormula = p.parse("(F & D & SB_exo & ~SNB_exo) | (F & D & SB_exo & SNB_exo) |" +
+                " (~F & D & SNB_exo & SB_exo) | (~F & D & SNB_exo & ~SB_exo) | (~F & D & ~SNB_exo & SB_exo) | (~F & ~D & SNB_exo & SB_exo)" +
+                "| (~F & ~D & SNB_exo & ~SB_exo) | (~F & ~D & ~SNB_exo & SB_exo)");
 
         Equation FEquation = new Equation(F, FFormula);
         Equation DEquation = new Equation(D, DFormula);
@@ -457,7 +459,7 @@ public class ProbabilisticExampleProvider {
         exogenousVariables.put(SBExo, 0.7);
         exogenousVariables.put(SNBExo, 0.9);
 
-        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Boulder falling", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Boulder", equations, exogenousVariables, f);
         return causalModel;
     }
 
@@ -508,7 +510,7 @@ public class ProbabilisticExampleProvider {
         exogenousVariables.put(SHExo, 0.5);
         exogenousVariables.put(BHExo, 0.9);
 
-        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Rock throwing, cause lowers probability", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Extended Rock Throwing", equations, exogenousVariables, f);
         return causalModel;
     }
 
@@ -521,7 +523,7 @@ public class ProbabilisticExampleProvider {
      * BD = 1: The barometer shows a low value; BD = 0: The barometer shows a high value
      * RS = 1: Rain starts to fall; RS = 0: Rain does not fall
      *
-     * @return
+     * @return Probabilistic variant of the barometer example
      * @throws InvalidCausalModelException
      */
     public static ProbabilisticCausalModel barometer() throws InvalidCausalModelException{
@@ -552,8 +554,15 @@ public class ProbabilisticExampleProvider {
     }
 
     /**
+     * Doctor treatment example in which a doctor might treat Billy on Monday, and he recovers due to it or other reasons
+     * on Tuesday.
+     * Example taken from: Halpern, Actual Causation, pp: 49-50
      *
-     * @return
+     * MT = 1: Doctor treats Billy on Monday; MT = 0: Doctor does not treat Billy on Monday
+     * OF = 1: Other factors that may cure Billy occur; OF = 0: Other factors do not occur
+     * BMC = 1: Billy's medical condition gets better on Tuesday; BMC = 0: Billy's medical condition does not get better on Tuesday
+     *
+     * @return Probabilistic Causal model of the doctor treatment example
      * @throws InvalidCausalModelException
      */
     public static ProbabilisticCausalModel doctorTreatment() throws InvalidCausalModelException {
@@ -582,11 +591,24 @@ public class ProbabilisticExampleProvider {
         exogenousVariables.put(TreatmentWorksExo, 0.9);
         exogenousVariables.put(OtherFactorsWorkExo, 0.1);
 
-        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("DoctorTreatment", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Doctor Treatment", equations, exogenousVariables, f);
         return causalModel;
     }
 
-    // Example 2.5.2
+    /**
+     * Variation of the doctor treatment example in which two doctors can treat Billy but if both doctors treat him it
+     * is likely to produce a bad interaction.
+     * Example taken from: Halpern, Actual Causation, pp: 50
+     *
+     * D1T = 1: Doctor 1 treats Billy; D1T = 0: Doctor 1 does not treat Billy
+     * D2T = 1: Doctor 2 treats Billy; D1T = 0: Doctor 2 does not treat Billy
+     * D1TEffective = 1: Doctor 1 treatment is effective; D1TEffective = 0: Doctor 1 treatment is not effective
+     * D2TEffective = 1: Doctor 2 treatment is effective; D2TEffective = 0: Doctor 2 treatment is not effective
+     * BMC = 1: Billy's medical condition gets better; BMC = 0: Billy's medical condition does not get better
+     *
+     * @return Probabilistic causal model of the two doctor treatment example
+     * @throws InvalidCausalModelException
+     */
     public static ProbabilisticCausalModel twoDoctorTreatment() throws InvalidCausalModelException {
         FormulaFactory f = new FormulaFactory();
         Variable D1TreatmentExo = f.variable("D1_exo");
@@ -623,11 +645,15 @@ public class ProbabilisticExampleProvider {
         exogenousVariables.put(D2TreatmentWorksExo, 0.9);
         exogenousVariables.put(BadInteractionExo, 0.8);
 
-        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("TwoDoctorTreatment", equations, exogenousVariables, f);
+        ProbabilisticCausalModel causalModel = new ProbabilisticCausalModel("Two Doctor Treatment", equations, exogenousVariables, f);
         return causalModel;
     }
 
-    // Example 2.5.4
+    /**
+     * Variation of the probabilistic rock throwing example
+     * @return
+     * @throws InvalidCausalModelException
+     */
     public static ProbabilisticCausalModel billyAndSuzyTopple() throws InvalidCausalModelException {
         FormulaFactory f = new FormulaFactory();
         Variable BTExo = f.variable("BT_exo");

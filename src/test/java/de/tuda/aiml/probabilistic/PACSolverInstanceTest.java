@@ -171,7 +171,142 @@ public class PACSolverInstanceTest {
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
                 new ProbabilisticCausalitySolverResult(true, false, true, cause,  null);
 
-        ProbabilisticCausalitySolverResult result = pacSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    // Switching Tracks
+    @Test
+    public void Engineer_flipping_switch_not_cause_of_train_arrival() throws Exception {
+        ProbabilisticCausalModel Switching = ProbabilisticExampleProvider.prob_switching_tracks();
+        FormulaFactory f = Switching.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("LB_exo", false), f.literal("RB_exo", false),
+                f.literal("A_exo", true)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("A");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, false, true, cause,  null);
+
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Switching, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    // Shooting Deer (Late Preemption)
+    @Test
+    public void Alice_shooting_cause_of_deers_death() throws Exception {
+        ProbabilisticCausalModel Deer = ProbabilisticExampleProvider.prob_shooting_deer();
+        FormulaFactory f = Deer.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("BI_exo", true), f.literal("A_exo", true), f.literal("B_exo", false),
+                f.literal("D0_exo", true), f.literal("D1_exo", true)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("A"));
+
+        Formula phi = f.variable("D101");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,new HashSet<>(Arrays.asList()));
+
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Deer, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    @Test
+    public void Bobs_intention_not_cause_of_deers_death() throws Exception {
+        ProbabilisticCausalModel Deer = ProbabilisticExampleProvider.prob_shooting_deer();
+        FormulaFactory f = Deer.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("BI_exo", true), f.literal("A_exo", true), f.literal("B_exo", false),
+                f.literal("D0_exo", true), f.literal("D1_exo", true)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("BI"));
+
+        Formula phi = f.variable("D101");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, false, true, cause, null);
+
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Deer, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    // Boulder
+    @Test
+    public void Boulder_fall_not_cause_of_hiker_surviving() throws Exception {
+        ProbabilisticCausalModel Boulder = ProbabilisticExampleProvider.prob_boulder();
+        FormulaFactory f = Boulder.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("D_exo", true), f.literal("SB_exo", true),
+                f.literal("SNB_exo", true)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("S");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, false, true, cause, null);
+
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Boulder, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    @Test
+    public void Boulder_fall_cause_hiker_ducking() throws Exception {
+        ProbabilisticCausalModel Boulder = ProbabilisticExampleProvider.prob_boulder();
+        FormulaFactory f = Boulder.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("D_exo", true), f.literal("SB_exo", true),
+                f.literal("SNB_exo", false)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("D");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
+
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Boulder, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
+
+        assertEquals(causalitySolverResultExpectedEval, result);
+    }
+
+    @Test
+    public void Hiker_ducking_causes_surviving() throws Exception {
+        ProbabilisticCausalModel Boulder = ProbabilisticExampleProvider.prob_boulder();
+        FormulaFactory f = Boulder.getFormulaFactory();
+        Set<Literal> context = new HashSet<>(Arrays.asList(
+                f.literal("F_exo", true), f.literal("D_exo", true), f.literal("SB_exo", true),
+                f.literal("SNB_exo", false)
+        ));
+
+        Set<Literal> cause = new HashSet<>();
+        cause.add(f.variable("F"));
+
+        Formula phi = f.variable("D");
+
+        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
+                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
+
+        ProbabilisticCausalitySolverResult result = pacSolver.solve(Boulder, context, phi, cause, ProbabilisticSolvingStrategy.PAC);
 
         assertEquals(causalitySolverResultExpectedEval, result);
     }

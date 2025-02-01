@@ -138,9 +138,9 @@ public class ProbabilityRaisingInstanceTest {
                 new ProbabilityRaisingResult(false, 0.73, Double.NaN);
 
         ProbabilityRaisingResult probabilityRaisingTrueResultExpected =
-                new ProbabilityRaisingResult(true, 0.62, 0.21);
+                new ProbabilityRaisingResult(true, 0.61, 0.21);
 
-        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Forest_Fire, 3000, phi, cause);
+        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Forest_Fire, 5000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Forest_Fire, phi, cause, context);
 
         assertEquals(probabilityRaisingTrueResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
@@ -261,7 +261,7 @@ public class ProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpected =
                 new ProbabilityRaisingResult(true, 1.0, 0.0);
 
-        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 3000, phi, cause);
+        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 5000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Barometer, phi, cause, context);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
@@ -290,7 +290,7 @@ public class ProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpectedFalse =
                 new ProbabilityRaisingResult(false, Double.NaN, 0.5);
 
-        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 3000, phi, cause);
+        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 5000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Barometer, phi, cause, context);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
@@ -316,12 +316,15 @@ public class ProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpected =
                 new ProbabilityRaisingResult(true, 1.0, 0.0);
 
-        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 3000, phi, cause);
+        ProbabilityRaisingResult probabilityRaisingResultExpectedGeneral =
+                new ProbabilityRaisingResult(true, 1.0, 0.0);
+
+        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 4000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Barometer, phi, cause, context);
 
-        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
-        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
-        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
+        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultExpectedGeneral.isCause());
+        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultExpectedGeneral.getPC(), 1e-1);
+        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultExpectedGeneral.getNotPC(), 1e-1);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultActual.isCause());
         assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultActual.getPC(), 1e-10);

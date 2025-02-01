@@ -70,8 +70,6 @@ public class CausalitySolverBlameInstanceTest {
         causes.add(new HashSet<>(Collections.singletonList(f.variable("M3"))));
         Formula phi = f.variable("D");
 
-        double sharedBlame = 1.0/3.0;
-
          BlameSolver BS1 = new BlameSolver(firingSquad, phi, causes.get(0), SolvingStrategy.ORIGINAL_HP);
          assertEquals(0.25, BS1.getBlameDifferentProbabilities(contextsMap), 1e-7);
 

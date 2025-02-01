@@ -37,7 +37,7 @@ public class OriginalHPSolver extends CausalitySolver {
 
     /**
      * Method to check if the second clause of the original HP variant is fulfilled.
-     * @param causalModel of the current example
+     * @param causalModel model of the current example
      * @param phi the effect
      * @param cause the cause to check if it fulfills the condition
      * @param context actual setting of the exogenous variables
