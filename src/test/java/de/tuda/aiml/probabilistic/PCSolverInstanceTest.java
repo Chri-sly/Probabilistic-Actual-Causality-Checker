@@ -155,10 +155,11 @@ public class PCSolverInstanceTest {
         assertEquals(causalitySolverResultExpectedEval, result);
     }
 
+    // Overlapping
     @Test
     public void Ra226_cause_of_alpha_particle() throws Exception {
-        ProbabilisticCausalModel Voting = ProbabilisticExampleProvider.prob_overlapping();
-        FormulaFactory f = Voting.getFormulaFactory();
+        ProbabilisticCausalModel Overlapping = ProbabilisticExampleProvider.prob_overlapping();
+        FormulaFactory f = Overlapping.getFormulaFactory();
         Set<Literal> context = new HashSet<>(Arrays.asList(
                 f.literal("U1", true), f.literal("U2", true), f.literal("U3", true),
                 f.literal("U4", false)
@@ -169,14 +170,10 @@ public class PCSolverInstanceTest {
 
         Formula phi = f.variable("E");
 
-        ProbabilisticCausalitySolverResult causalitySolverResultExpectedEval =
-                new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList(f.literal("A", true),
-                        f.literal("C", true), f.literal("D", false))));
-
         ProbabilisticCausalitySolverResult causalitySolverResultExpectedEvalEmpty =
                 new ProbabilisticCausalitySolverResult(true, true, true, cause,  new HashSet<>(Arrays.asList()));
 
-        ProbabilisticCausalitySolverResult result = pcSolver.solve(Voting, context, phi, cause, ProbabilisticSolvingStrategy.PC);
+        ProbabilisticCausalitySolverResult result = pcSolver.solve(Overlapping, context, phi, cause, ProbabilisticSolvingStrategy.PC);
 
         assertEquals(causalitySolverResultExpectedEvalEmpty, result);
     }

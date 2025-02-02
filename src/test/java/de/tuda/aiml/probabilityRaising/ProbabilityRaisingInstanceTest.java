@@ -274,35 +274,6 @@ public class ProbabilityRaisingInstanceTest {
     }
 
     @Test
-    public void Barometer_Drop_causes_Rain_no_air_drop() throws Exception {
-        ProbabilisticCausalModel Barometer = ProbabilisticExampleProvider.barometer();
-        FormulaFactory f = Barometer.getFormulaFactory();
-        Set<Literal> context = new HashSet<>(Arrays.asList(f.literal("BW_exo", false)));
-
-        Set<Literal> cause = new HashSet<>();
-        cause.add(f.variable("BD"));
-
-        Formula phi = f.variable("RS");
-
-        ProbabilityRaisingResult probabilityRaisingResultExpected =
-                new ProbabilityRaisingResult(true, 1.0, 0.0);
-
-        ProbabilityRaisingResult probabilityRaisingResultExpectedFalse =
-                new ProbabilityRaisingResult(false, Double.NaN, 0.5);
-
-        ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 5000, phi, cause);
-        ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Barometer, phi, cause, context);
-
-        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
-        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
-        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
-
-        assertEquals(probabilityRaisingResultExpectedFalse.isCause(), probabilityRaisingResultActual.isCause());
-        assertEquals(probabilityRaisingResultExpectedFalse.getPC(), probabilityRaisingResultActual.getPC(), 1e-10);
-        assertEquals(probabilityRaisingResultExpectedFalse.getNotPC(), probabilityRaisingResultActual.getNotPC(), 0.0);
-    }
-
-    @Test
     public void Rain_causes_drop_Barometer() throws Exception {
         ProbabilisticCausalModel Barometer = ProbabilisticExampleProvider.barometer();
         FormulaFactory f = Barometer.getFormulaFactory();

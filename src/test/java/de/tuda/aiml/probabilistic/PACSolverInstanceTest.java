@@ -154,6 +154,7 @@ public class PACSolverInstanceTest {
         assertEquals(causalitySolverResultExpectedEval, result);
     }
 
+    // Overlapping
     @Test
     public void Ra226_cause_of_alpha_particle() throws Exception {
         ProbabilisticCausalModel Voting = ProbabilisticExampleProvider.prob_overlapping();

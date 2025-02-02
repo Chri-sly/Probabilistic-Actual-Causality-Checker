@@ -25,7 +25,7 @@ public class PCSolver extends ProbabilisticCausalitySolver {
      * @param phi             the phi
      * @param cause           the cause
      * @param solvingStrategy the applied solving strategy
-     * @return for each PC', true if fulfilled, false else
+     * @return for each PC, true if fulfilled, false else
      * @throws InvalidCausalModelException thrown if internally generated causal models are invalid
      */
      public ProbabilisticCausalitySolverResult solve(ProbabilisticCausalModel causalModel, Set<Literal> context, Formula phi,
@@ -64,8 +64,7 @@ public class PCSolver extends ProbabilisticCausalitySolver {
         ProbabilisticCausalModel causalModelForCause = createModifiedCausalModelForCause(causalModel, cause, f);
         ProbabilisticCausalModel causalModelForNegatedCause = createModifiedCausalModelForNegatedCause(causalModel, cause, f);
 
-        // evaluate causal model with setting x' for cause
-        Set<Literal> evaluationModified = ProbabilisticCausalitySolver.evaluateEquations(causalModelForCause, context);
+        Set<Literal> evaluationModified;
 
         // get the cause as set of variables
         Set<Variable> causeVariables = cause.stream().map(Literal::variable).collect(Collectors.toSet());
