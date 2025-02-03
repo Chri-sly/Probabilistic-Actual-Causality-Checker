@@ -18,10 +18,11 @@ public class PCSolverInstanceTest {
     PCSolver pcSolver;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         pcSolver = new PCSolver();
     }
 
+    // Police Parade
     @Test
     public void Corleones_Order_Cause_of_Death() throws Exception {
         ProbabilisticCausalModel Don_Corleone = ProbabilisticExampleProvider.donPolice();

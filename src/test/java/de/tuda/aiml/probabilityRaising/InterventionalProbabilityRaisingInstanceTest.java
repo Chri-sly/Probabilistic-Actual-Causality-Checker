@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 
 public class InterventionalProbabilityRaisingInstanceTest {
 
+    // Rock Throwing
     @Test
     public void Suzy_causes_bottle_shatter() throws Exception {
         ProbabilisticCausalModel prob_rock_throwing = ProbabilisticExampleProvider.prob_rock_throwing();
@@ -56,6 +57,7 @@ public class InterventionalProbabilityRaisingInstanceTest {
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 1e-10);
     }
 
+    // Extended Rock Throwing
     @Test
     public void Suzy_is_cause_but_lowers_prob() throws Exception {
         ProbabilisticCausalModel prob_rock_throwing_cause_lowers_prob = ProbabilisticExampleProvider.prob_rock_throwing_cause_lowers_prob();
@@ -96,6 +98,7 @@ public class InterventionalProbabilityRaisingInstanceTest {
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 0.0);
     }
 
+    // Forest fire
     @Test
     public void Match_drop_Causes_Forest_fire() throws Exception {
         ProbabilisticCausalModel Forest_Fire = ProbabilisticExampleProvider.prob_forest_fire();
@@ -142,6 +145,7 @@ public class InterventionalProbabilityRaisingInstanceTest {
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 1e-10);
     }
 
+    // Police parade
     @Test
     public void Corleones_Order_not_Cause_of_Death() throws Exception {
         ProbabilisticCausalModel Don_Corleone = ProbabilisticExampleProvider.donPolice();
@@ -188,6 +192,7 @@ public class InterventionalProbabilityRaisingInstanceTest {
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 0.0);
     }
 
+    // Barometer
     @Test
     public void Barometer_Drop_not_causes_Rain() throws Exception {
         ProbabilisticCausalModel Barometer = ProbabilisticExampleProvider.barometer();

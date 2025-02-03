@@ -191,14 +191,7 @@ public class OriginalCausalitySolverInstanceTest {
         assertEquals(causalitySolverResultExpected, causalitySolverResultActual);
     }
 
-    // #################################################################################################################
-    // ################################################ PRISONERS ##################################################
-    // #################################################################################################################
-    //region PRISONERS
-    //region [PRISONERS] A_exo = 1; B_exo = 0; C_exo = 1
-    // The example that Halpern mentions in chapter 2.8 AC2 original vs AC2 updated
-
-    // Wrong case of Original Variant
+    // Prisoners
     @Test
     public void Original_Should_FulfillAllACs_When_A_IsCauseFor_D() throws Exception {
         CausalModel prisoners = DeterministicExampleProvider.prisoners();
@@ -255,7 +248,6 @@ public class OriginalCausalitySolverInstanceTest {
         assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
     }
 
-    //region [PRISONERS] A_exo = 1; B_exo = 1; C_exo = 0
     @Test
     public void Original_Should_FulfillAllACs_When_A_IsCauseFor_D_B_Shoots_C_Not() throws Exception {
         CausalModel prisoners = DeterministicExampleProvider.prisoners();
@@ -293,8 +285,6 @@ public class OriginalCausalitySolverInstanceTest {
         assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
     }
 
-    //region [PRISONERS] A_exo = 0; B_exo = 1; C_exo = 1
-
     @Test
     public void Original_Should_Not_FulfillAC1_When_A_IsCauseFor_D_B_Shoots_A_Not_Load() throws Exception {
         CausalModel prisoners = DeterministicExampleProvider.prisoners();
@@ -313,7 +303,6 @@ public class OriginalCausalitySolverInstanceTest {
         assertEquals(causalitySolverResultExpectedEval, causalitySolverResultActual);
     }
 
-    // Wrong case of Original Variant
     @Test
     public void Original_Should_FulfillAllAC_When_B_IsCauseFor_D_B_Shoots_A_Not_Load() throws InvalidCausalModelException {
         CausalModel prisoners = DeterministicExampleProvider.prisoners();

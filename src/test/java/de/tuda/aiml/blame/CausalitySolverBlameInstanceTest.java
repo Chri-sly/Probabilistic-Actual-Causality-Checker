@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 public class CausalitySolverBlameInstanceTest {
 
+    // Firing Squad
     @Test
     public void firing_squad_sharing_blame() throws Exception {
         CausalModel firingSquad = DeterministicExampleProvider.firingSquad();

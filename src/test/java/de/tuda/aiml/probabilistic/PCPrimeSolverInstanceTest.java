@@ -17,10 +17,11 @@ public class PCPrimeSolverInstanceTest {
     PCPrimeSolver pcPrimeSolver;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         pcPrimeSolver = new PCPrimeSolver();
     }
 
+    // Police parade
     @Test
     public void Corleones_Order_Cause_of_Death() throws Exception {
         ProbabilisticCausalModel Don_Corleone = ProbabilisticExampleProvider.donPolice();
@@ -156,6 +157,7 @@ public class PCPrimeSolverInstanceTest {
         assertEquals(causalitySolverResultExpectedEval, result);
     }
 
+    // Overlapping
     @Test
     public void Ra226_cause_of_alpha_particle() throws Exception {
         ProbabilisticCausalModel Voting = ProbabilisticExampleProvider.prob_overlapping();

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ProbabilityRaisingInstanceTest {
 
+    // Rock Throwing
     @Test
     public void Suzy_causes_bottle_shatter() throws Exception {
         ProbabilisticCausalModel prob_rock_throwing = ProbabilisticExampleProvider.prob_rock_throwing();
@@ -69,7 +70,7 @@ public class ProbabilityRaisingInstanceTest {
         assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultActual.getNotPC(), 1e-10);
     }
 
-    // Variant of the rock-throwing example in which the cause lowers the probability of the effect
+    // Extended Rock Throwing
     @Test
     public void Suzy_is_cause_but_lowers_prob() throws Exception {
         ProbabilisticCausalModel prob_rock_throwing_cause_lowers_prob = ProbabilisticExampleProvider.prob_rock_throwing_cause_lowers_prob();
@@ -287,15 +288,12 @@ public class ProbabilityRaisingInstanceTest {
         ProbabilityRaisingResult probabilityRaisingResultExpected =
                 new ProbabilityRaisingResult(true, 1.0, 0.0);
 
-        ProbabilityRaisingResult probabilityRaisingResultExpectedGeneral =
-                new ProbabilityRaisingResult(true, 1.0, 0.0);
-
         ProbabilityRaisingResult probabilityRaisingResultGeneral  = ProbabilityRaising.compute(Barometer, 4000, phi, cause);
         ProbabilityRaisingResult probabilityRaisingResultActual = ProbabilityRaising.computeActual(Barometer, phi, cause, context);
 
-        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultExpectedGeneral.isCause());
-        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultExpectedGeneral.getPC(), 1e-1);
-        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultExpectedGeneral.getNotPC(), 1e-1);
+        assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultGeneral.isCause());
+        assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultGeneral.getPC(), 1e-1);
+        assertEquals(probabilityRaisingResultExpected.getNotPC(), probabilityRaisingResultGeneral.getNotPC(), 1e-1);
 
         assertEquals(probabilityRaisingResultExpected.isCause(), probabilityRaisingResultActual.isCause());
         assertEquals(probabilityRaisingResultExpected.getPC(), probabilityRaisingResultActual.getPC(), 1e-10);

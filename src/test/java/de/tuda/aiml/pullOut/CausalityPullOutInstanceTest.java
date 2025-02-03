@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 public class CausalityPullOutInstanceTest {
 
 
-    // rock-throwing
+    // Rock-Throwing
     @Test
     public void Prob_Rock_Throwing_PullOutProbability_Prob_Susy_is_cause() throws Exception {
         ProbabilisticCausalModel billySuzy = ProbabilisticExampleProvider.prob_rock_throwing();
@@ -80,7 +80,7 @@ public class CausalityPullOutInstanceTest {
         assertEquals(1.0, result, 1e-7);
     }
 
-    // doctor-treatment
+    // Doctor-Treatment
     @Test
     public void Prob_Doctor_Treatment_PullOutProbability() throws Exception {
         ProbabilisticCausalModel billySuzy = ProbabilisticExampleProvider.doctorTreatment();

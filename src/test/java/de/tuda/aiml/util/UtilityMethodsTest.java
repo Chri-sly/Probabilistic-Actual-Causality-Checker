@@ -35,7 +35,6 @@ public class UtilityMethodsTest {
 
     @Test
     public void noDuplicatesTestTrueWhenEmptySet(){
-        FormulaFactory f = new FormulaFactory();
         Set<Literal> literalSet = new HashSet<>();
 
         assertTrue(UtilityMethods.noDuplicates(literalSet));

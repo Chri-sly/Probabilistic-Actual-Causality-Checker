@@ -21,6 +21,7 @@ public class PACSolverInstanceTest {
         pacSolver = new PACSolver();
     }
 
+    // Police parade
     @Test
     public void Corleones_Order_Cause_of_Death() throws Exception {
         ProbabilisticCausalModel Don_Corleone = ProbabilisticExampleProvider.donPolice();
